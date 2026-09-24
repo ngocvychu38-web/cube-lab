@@ -1,0 +1,491 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#0c0f16">
+<title>Cube Lab — 三阶魔方</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap');
+:root{--bg:#2d3541;--panel:#384250;--panel2:#414c5b;--line:#566171;--muted:#bbc4d0;--text:#f5f7fa;--accent:#b6f36a;--blue:#729bff;--shadow:0 20px 70px #090e1860}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 50% 20%,#525e6c 0,#3b4654 48%,#303946 100%);color:var(--text);font-family:Manrope,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;min-height:100vh}button{font:inherit;color:inherit;cursor:pointer}.shell{max-width:1280px;margin:auto;padding:28px 32px 38px}.topbar{display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #566171;padding-bottom:21px}.brand{display:flex;gap:12px;align-items:center;font-weight:800;letter-spacing:.02em}.brandmark{width:34px;height:34px;display:grid;place-items:center;border-radius:10px;background:var(--accent);color:#151b12;font-size:19px;box-shadow:0 0 30px #b6f36a24}.brand small{display:block;color:var(--muted);font-size:10px;letter-spacing:.18em;font-weight:600;margin-top:2px}.top-actions{display:flex;gap:10px}.iconbtn,.ghost{background:#3c4654;border:1px solid #596575;border-radius:10px;padding:10px 14px;font-size:12px;color:#c2cad6;transition:.18s}.iconbtn:hover,.ghost:hover{border-color:#65758e;color:white;transform:translateY(-1px)}.hero{display:flex;align-items:end;justify-content:space-between;margin:29px 0 20px}.eyebrow{color:var(--accent);font:11px 'DM Mono',monospace;letter-spacing:.2em;text-transform:uppercase}.hero h1{margin:8px 0 4px;font-size:clamp(26px,4vw,37px);letter-spacing:-.045em}.hero p{margin:0;color:var(--muted);font-size:13px}.status{display:flex;align-items:center;gap:8px;color:#aab4c3;font-size:12px;padding-bottom:5px}.dot{width:7px;height:7px;border-radius:50%;background:var(--accent);box-shadow:0 0 12px #b6f36a88}.layout{display:grid;grid-template-columns:minmax(0,1fr) 306px;gap:18px}.stage{height:590px;min-height:480px;position:relative;overflow:hidden;border:1px solid #687586;border-radius:18px;background:radial-gradient(ellipse at 50% 42%,#687687 0%,#505e6e 45%,#3d4958 100%);box-shadow:var(--shadow);touch-action:none}.stage:before{content:"";position:absolute;inset:0;background-image:linear-gradient(#ffffff05 1px,transparent 1px),linear-gradient(90deg,#ffffff05 1px,transparent 1px);background-size:40px 40px;mask-image:linear-gradient(transparent,#0008 35%,#0008 70%,transparent);pointer-events:none}.stage:after{content:"";position:absolute;width:380px;height:65px;left:50%;bottom:86px;transform:translateX(-50%);background:#05070a88;filter:blur(27px);border-radius:50%;pointer-events:none}.stagehead{position:absolute;z-index:2;left:20px;top:18px;color:#96a1b1;font:10px 'DM Mono',monospace;letter-spacing:.12em}.stagenote{position:absolute;z-index:2;right:18px;top:18px;font-size:10px;color:#788494}.cube-wrap{position:absolute;left:50%;top:47%;width:1px;height:1px;perspective:1050px;z-index:1}.cube{position:absolute;left:0;top:0;width:0;height:0;transform-style:preserve-3d;transition:transform .34s cubic-bezier(.2,.75,.2,1)}.cubie{position:absolute;width:78px;height:78px;transform-style:preserve-3d;transition:transform .34s cubic-bezier(.2,.75,.2,1)}.face{position:absolute;width:76px;height:76px;left:1px;top:1px;border:3px solid #090b0f;border-radius:9px;background:#151922;backface-visibility:hidden;display:grid;grid-template:repeat(3,1fr)/repeat(3,1fr);gap:3px;padding:4px;box-shadow:inset 0 0 0 1px #ffffff0b}.tile{border-radius:4px;background:var(--c);box-shadow:inset 0 1px #ffffff4d,inset 0 -2px #0003}.f-front{transform:translateZ(39px)}.f-back{transform:rotateY(180deg) translateZ(39px)}.f-right{transform:rotateY(90deg) translateZ(39px)}.f-left{transform:rotateY(-90deg) translateZ(39px)}.f-up{transform:rotateX(90deg) translateZ(39px)}.f-down{transform:rotateX(-90deg) translateZ(39px)}.axis{position:absolute;z-index:2;left:20px;bottom:18px;color:#718092;font:10px 'DM Mono',monospace;letter-spacing:.08em}.viewhint{position:absolute;right:18px;bottom:18px;color:#718092;font-size:10px}.sidebar{display:flex;flex-direction:column;gap:14px}.card{background:linear-gradient(145deg,#414d5b,#35404d);border:1px solid #596676;border-radius:15px;padding:17px}.cardhead{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}.cardtitle{font-size:12px;font-weight:700;letter-spacing:.02em}.cardmeta{color:#7f8a9b;font:10px 'DM Mono',monospace}.timer{text-align:center;padding:8px 0 14px}.time{font:500 41px 'DM Mono',monospace;letter-spacing:-.07em;font-variant-numeric:tabular-nums}.timer-label{font-size:10px;color:#7f8a9b;letter-spacing:.13em;margin-top:5px}.timer-controls{display:grid;grid-template-columns:1fr 1fr;gap:8px}.primary{border:0;background:var(--accent);color:#18200f;font-weight:800;border-radius:9px;padding:11px;font-size:12px;transition:.18s}.primary:hover{filter:brightness(1.08);transform:translateY(-1px)}.secondary{border:1px solid #303a48;background:#202734;color:#d5dce6;border-radius:9px;padding:10px;font-size:12px}.scramble{font:11px/1.8 'DM Mono',monospace;color:#c2cad5;min-height:43px;word-spacing:3px}.scramble.empty{color:#6f7a89;font:11px Manrope,sans-serif;line-height:1.7}.controls{display:grid;grid-template-columns:1fr 1fr;gap:8px}.movebtn{position:relative;text-align:left;padding:9px 10px;background:#465260;border:1px solid #657283;border-radius:9px;color:#e0e5ed;font:12px 'DM Mono',monospace;transition:.15s}.movebtn:hover{background:#252e3b;border-color:#475569}.movebtn span{float:right;color:#788494;font:9px Manrope,sans-serif;margin-top:2px}.movebtn.wide{grid-column:span 2}.bottomrow{display:flex;justify-content:space-between;margin-top:10px;align-items:center}.micro{background:none;border:0;color:#8591a2;font-size:10px;padding:3px}.micro:hover{color:white}.history{height:61px;overflow:auto;display:flex;align-content:flex-start;flex-wrap:wrap;gap:5px}.chip{padding:4px 7px;background:#202733;border:1px solid #2b3440;color:#bbc4d0;border-radius:5px;font:10px 'DM Mono',monospace}.emptyhist{font-size:11px;color:#707b8a;align-self:center}.foot{display:flex;align-items:center;justify-content:space-between;margin-top:18px;color:#778393;font-size:10px}.kbd{font:10px 'DM Mono',monospace;color:#9aa5b5}.toast{position:fixed;left:50%;bottom:25px;transform:translate(-50%,20px);padding:10px 16px;border:1px solid #374453;border-radius:10px;background:#1a222d;color:#e8edf4;font-size:12px;opacity:0;pointer-events:none;transition:.25s;z-index:20;box-shadow:var(--shadow)}.toast.show{opacity:1;transform:translate(-50%,0)}dialog#aiDialog{width:min(480px,calc(100vw - 28px));max-height:88vh;padding:0;border:1px solid #718092;border-radius:17px;background:#303b49;color:var(--text);box-shadow:0 28px 90px #0009}dialog#aiDialog::backdrop{background:#10151dcc;backdrop-filter:blur(5px)}.ai-modal{padding:20px;overflow:auto;max-height:88vh}.ai-modal label{display:block;margin:12px 0;color:#c4ceda;font-size:11px}.ai-modal input,.ai-modal select{display:block;width:100%;margin-top:6px;padding:10px 11px;border-radius:8px;border:1px solid #637081;background:#222b36;color:#f4f6fa;font:12px Manrope,sans-serif;outline:none}.ai-modal input:focus,.ai-modal select:focus{border-color:var(--accent)}.ai-actions{display:flex;gap:8px;margin:15px 0 18px}.ai-actions>*{flex:1}.ai-loghead{display:flex;justify-content:space-between;align-items:center;font-size:11px;font-weight:700;margin:10px 0}.ai-log{height:145px;overflow:auto;padding:10px;background:#222b36;border:1px solid #465363;border-radius:9px;font:10px/1.7 "DM Mono",monospace;color:#c8d1dc}.ai-log-entry{padding:3px 0;border-bottom:1px solid #ffffff0d;white-space:pre-wrap;word-break:break-word}.ai-log-entry.ai-error{color:#ffaaa1}.ai-busy{opacity:.7;pointer-events:none}
+@media(max-width:900px){.shell{padding:20px}.layout{grid-template-columns:1fr}.stage{height:min(70vh,590px);min-height:450px}.sidebar{display:grid;grid-template-columns:1fr 1fr}.sidebar .card:nth-child(3){grid-column:span 2}.hero{align-items:start;gap:10px;flex-direction:column}.status{padding:0}}@media(max-width:560px){.shell{padding:15px}.topbar{padding-bottom:15px}.top-actions .ghost{padding:9px;font-size:11px}.stage{height:430px;min-height:430px}.cubie{width:63px;height:63px}.face{width:61px;height:61px;border-radius:7px;gap:2px;padding:3px}.f-front{transform:translateZ(31.5px)}.f-back{transform:rotateY(180deg) translateZ(31.5px)}.f-right{transform:rotateY(90deg) translateZ(31.5px)}.f-left{transform:rotateY(-90deg) translateZ(31.5px)}.f-up{transform:rotateX(90deg) translateZ(31.5px)}.f-down{transform:rotateX(-90deg) translateZ(31.5px)}.sidebar{grid-template-columns:1fr}.sidebar .card:nth-child(3){grid-column:auto}.time{font-size:36px}.foot{gap:8px;flex-direction:column;align-items:start}}
+ .ai-live{position:absolute;z-index:3;left:18px;top:52px;width:190px;max-height:310px;padding:11px;border:1px solid #8593a4;border-radius:11px;background:#26313dcc;backdrop-filter:blur(8px);box-shadow:0 12px 30px #10172155;pointer-events:none}.ai-live-title{color:var(--accent);font:10px 'DM Mono',monospace;letter-spacing:.12em;margin-bottom:8px}.ai-live-log{max-height:268px;overflow:hidden;color:#d7dee8;font:9px/1.6 'DM Mono',monospace}.ai-live-log span{display:block;padding:2px 0;border-bottom:1px solid #ffffff10;white-space:pre-wrap;word-break:break-word}.ai-live-log .live-error{color:#ffaaa1}dialog#aiDialog{position:fixed;inset:auto 20px 20px auto;margin:0}dialog#aiDialog::backdrop{background:transparent}.ai-modal{max-height:calc(100vh - 40px)}
+.shell{max-width:1540px}.cube-area{display:grid;grid-template-columns:210px minmax(0,1fr);gap:14px;min-width:0;align-items:start}.cube-area .ai-live{position:static;width:auto;max-height:590px;pointer-events:auto}.cube-area .ai-live-log{max-height:520px;overflow:auto}.stage{min-width:0}#cubeCanvas{display:block;width:100%;height:100%;position:relative;z-index:1}.stage:after{z-index:0}
+@media(max-width:1100px){.cube-area{grid-template-columns:160px minmax(0,1fr)}}@media(max-width:600px){.cube-area{grid-template-columns:1fr}.cube-area .ai-live{order:2}.cube-area .ai-live-log{max-height:180px}}
+.cube-area{grid-template-columns:250px minmax(0,1fr)}.cube-area .ai-live{max-height:none}.cross-status{white-space:pre-wrap;font-size:12px;line-height:1.7;margin:12px 0;padding:10px;background:#1e2a36;border-radius:8px}.cross-candidates{display:grid;gap:6px}.cross-candidate{white-space:pre-wrap;font:11px/1.6 'DM Mono',monospace;border:1px solid #6b7989;border-radius:7px;padding:8px}.cross-candidate.selected{border-color:#b6f36a;background:#405438}.cross-buttons{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:12px 0}.cube-area .ai-live-log{max-height:260px;overflow:auto;font-size:11px}.ai-live-title{font-size:12px}.ai-modal .cardmeta,.micro{color:#c4ceda}button:disabled{opacity:.45;cursor:default;transform:none!important}.sidebar dialog#aiDialog{position:static;inset:auto;width:100%;margin:0;max-height:none;box-shadow:none}.ai-modal{padding:14px;max-height:none}.view-actions{position:absolute;bottom:45px;left:14px;z-index:3;display:flex;gap:8px}.view-actions button{font-size:11px;background:#334253e6}.top-actions{flex-wrap:wrap}.ai-log-entry{font-size:11px}
+@media(max-width:1100px){.cube-area{grid-template-columns:205px minmax(0,1fr)}}@media(max-width:600px){.cube-area{grid-template-columns:1fr}}
+.stage{height:clamp(390px,calc(100vh - 270px),590px);min-height:390px;position:sticky;top:14px}.cross-progress{display:grid;grid-template-columns:1fr 1fr;gap:4px;font-size:11px;line-height:1.6}.cross-progress strong,.cross-progress small{grid-column:1/-1}.cross-status{font-size:11px;line-height:1.5}.cross-options summary{font-size:11px;cursor:pointer;padding:5px 0}.cross-candidates{max-height:155px;overflow:auto}.cube-area .ai-live-log{max-height:180px}.cube-area .ai-live{padding:12px}
+.stage-tabs{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:12px 0}.stage-tabs button{padding:9px 4px;font-size:11px}.stage-tabs button[aria-pressed="true"]{border-color:var(--accent);color:var(--accent);background:#344733}.stage-prerequisite{padding:5px 0;color:#c5d0db}.cross-progress strong{margin-top:4px}
+@media(max-width:600px){.stage{position:relative;top:auto;height:360px;min-height:360px}}
+</style></head>
+<body><main class="shell"><header class="topbar"><div class="brand"><div class="brandmark">✣</div><div>Cube Lab<small>PUZZLE PLAYGROUND</small></div></div><div class="top-actions"><button class="ghost" id="undoTop">↶　撤销</button><button class="ghost" id="resetTop">⟳　复原</button><button class="primary" id="aiOpen">✦　AI 操作</button></div></header>
+<section class="hero"><div><div class="eyebrow">CLASSIC 3 × 3 × 3</div><h1>把每一面，转回秩序。</h1><p>随时开始一局，试试你的解谜速度。</p></div><div class="status"><i class="dot"></i><span id="statusText">已就绪 · 开始转动吧</span></div></section>
+<section class="layout"><div class="stage" id="stage"><div class="stagehead">INTERACTIVE CUBE　/　3D VIEW</div><div class="stagenote">拖动以旋转视角</div><div class="ai-live"><div class="ai-live-title">✦ JEV LIVE</div><div id="aiLiveLog" class="ai-live-log"><span>等待 AI 操作…</span></div></div><canvas id="cubeCanvas" aria-label="可交互的三阶魔方 3D 视图"></canvas><div class="axis">U ↑　R →　F ●</div><div class="viewhint">鼠标拖动 / 触屏滑动</div></div>
+<aside class="sidebar"><section class="card"><div class="cardhead"><div class="cardtitle">⏱　计时器</div><div class="cardmeta">SPACE</div></div><div class="timer"><div class="time" id="time">00:00.00</div><div class="timer-label" id="timerLabel">准备就绪</div></div><div class="timer-controls"><button class="primary" id="timerBtn">开始计时</button><button class="secondary" id="timerReset">重置</button></div></section>
+<section class="card"><div class="cardhead"><div class="cardtitle">✳　随机打乱</div><div class="cardmeta" id="scrambleLen">20 MOVES</div></div><div class="scramble empty" id="scramble">生成一组随机公式，开始挑战。</div><div class="bottomrow"><button class="micro" id="copyScramble">复制公式</button><button class="micro" id="newScramble">↻　重新打乱</button></div></section>
+<section class="card"><div class="cardhead"><div class="cardtitle">⌘　转动控制</div><div class="cardmeta">键盘快捷键</div></div><div class="controls" id="controls"></div><div class="bottomrow"><button class="micro" id="undoBtn">↶　撤销上一步</button><button class="micro" id="resetBtn">⟳　复原魔方</button></div></section>
+<section class="card"><div class="cardhead"><div class="cardtitle">☷　转动记录</div><button class="micro" id="clearHistory">清空</button></div><div class="history" id="history"><div class="emptyhist">转动后会显示在这里</div></div></section></aside></section>
+<footer class="foot"><span>DRAG TO ORBIT　·　CLICK OR USE KEYS TO TURN</span><span class="kbd">R L U D F B　/　Shift + 字母 = 逆时针</span></footer></main><dialog id="aiDialog"><form method="dialog" class="ai-modal"><div class="cardhead"><div><div class="cardtitle">✦　底层十字 · AI 设置</div><div class="cardmeta">参数保存在此浏览器本地</div></div><button class="micro" value="close" formnovalidate aria-label="关闭">✕</button></div><label>API 地址<input id="aiEndpoint" type="url" readonly required></label><label>模型名称<input id="aiModel" type="text" placeholder="模型名称" required></label><label>API Key<input id="aiKey" type="password" placeholder="粘贴你的 API Key" autocomplete="off" required></label><label>操作目标<select id="aiGoal"><option value="cross">第1步：底层十字（完成后停止）</option></select></label><div class="ai-actions"><button class="secondary" id="aiSave" type="button">保存设置</button><button class="primary" id="aiRun" type="button">开始 AI 操作</button></div><div class="ai-loghead">操作过程 <button class="micro" id="aiClearLog" type="button">清空</button></div><div id="aiLog" class="ai-log" aria-live="polite"><div class="emptyhist">AI 请求、回复和每一步转动会记录在这里。</div></div></form></dialog><div class="toast" id="toast"></div>
+<script src="cross-planner.js"></script>
+<script src="corner-planner.js"></script>
+<script src="layer-planners.js"></script>
+<script src="cross-controller.js"></script>
+<script>
+(()=>{'use strict';
+const three=document.createElement('script');three.src='https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js';three.onload=init;three.onerror=()=>{document.querySelector('#statusText').textContent='3D 引擎加载失败，请检查网络后刷新'};document.head.appendChild(three);
+function init(){
+const colors={U:'#f5f2e9',D:'#ffd52a',F:'#27c76f',B:'#3978ee',R:'#ed4b4b',L:'#ff8b25',inner:'#171c25'};
+const faces=[['F',[0,0,1],[0,0,0]],['B',[0,0,-1],[0,180,0]],['R',[1,0,0],[0,90,0]],['L',[-1,0,0],[0,-90,0]],['U',[0,1,0],[-90,0,0]],['D',[0,-1,0],[90,0,0]]];
+const stage=document.querySelector('#stage'), canvas=document.querySelector('#cubeCanvas'),historyEl=document.querySelector('#history');
+const viewButtons=document.createElement('div');viewButtons.className='view-actions';
+viewButtons.innerHTML='<button id="bottomView" class="ghost">查看底层</button><button id="topView" class="ghost">查看顶层</button><button id="normalView" class="ghost">默认视角</button>';stage.append(viewButtons);
+
+// Real Rubik's Cube recording by SpaceJoe (CC0); see assets/audio/CREDITS.md.
+const turnSound=(()=>{
+  const AudioContextClass=window.AudioContext||window.webkitAudioContext;
+  const preferenceKey='cubeLab.sound.v1';
+  let enabled=true,context=null,master=null,buffers=null,loading=null,loadError=false,previewToken=null;
+  try{enabled=localStorage.getItem(preferenceKey)!=='off';}catch{}
+  const button=document.createElement('button');button.className='ghost';button.id='soundToggle';button.type='button';
+  const preview=document.createElement('button');preview.className='ghost';preview.id='soundPreview';preview.type='button';preview.textContent='试听魔方声';
+  document.querySelector('.top-actions').prepend(button,preview);
+  function updateButton(){
+    button.textContent=AudioContextClass?'音效：'+(enabled?'开':'关'):'音效不可用';
+    button.disabled=preview.disabled=!AudioContextClass;
+    button.setAttribute('aria-pressed',String(enabled&&!!AudioContextClass));
+    button.title=loadError?'录音加载失败，点击试听可重试':'真实魔方转动录音；点击切换，设置自动保存';
+    preview.title='试听一次真实魔方转动声，不改变魔方状态';
+  }
+  function volume(){if(!master)return;const now=context.currentTime;master.gain.cancelScheduledValues(now);master.gain.setTargetAtTime(enabled&&!document.hidden?0.9:0,now,.012);}
+  async function load(){
+    if(buffers)return buffers;if(loading)return loading;
+    const base=location.protocol==='file:'?'http://127.0.0.1:8787/':'/';
+    loading=Promise.all(['90','180'].map(async angle=>{
+      const response=await fetch(base+'assets/audio/rubik-turn-'+angle+'.wav',{signal:AbortSignal.timeout(8000)});
+      if(!response.ok)throw new Error('录音加载失败');
+      return context.decodeAudioData(await response.arrayBuffer());
+    })).then(result=>{buffers=result;loadError=false;return result;}).catch(()=>{loadError=true;return null;}).finally(()=>{loading=null;updateButton();});
+    return loading;
+  }
+  async function unlock(){
+    if(!enabled||!AudioContextClass||document.hidden)return false;
+    try{
+      if(!context){
+        context=new AudioContextClass({latencyHint:'interactive'});master=context.createGain();master.gain.value=.9;
+        master.connect(context.destination);
+      }
+      if(context.state==='suspended'||context.state==='interrupted')await context.resume();
+      volume();return !!(await load())&&context.state==='running';
+    }catch{loadError=true;updateButton();return false;}
+  }
+  function begin(start,duration){
+    const token={active:true,source:null,gain:null};
+    unlock().then(ready=>{
+      if(!ready||!token.active||!enabled||document.hidden)return;
+      const elapsed=(performance.now()-start)/1000,buffer=buffers[duration>500?1:0];
+      if(elapsed>=buffer.duration-.01)return;
+      try{
+        const source=context.createBufferSource(),gain=context.createGain();
+        source.buffer=buffer;gain.gain.value=1;source.connect(gain);gain.connect(master);
+        token.source=source;token.gain=gain;source.start(context.currentTime,Math.max(0,elapsed));
+        source.onended=()=>{source.disconnect();gain.disconnect();token.source=null;token.gain=null;};
+      }catch{}
+    });
+    return token;
+  }
+  function finish(token){
+    token.active=false;
+    if(token.source)try{const now=context.currentTime;token.gain.gain.setTargetAtTime(0,now,.003);token.source.stop(now+.012);}catch{}
+  }
+  button.onclick=()=>{enabled=!enabled;try{localStorage.setItem(preferenceKey,enabled?'on':'off');}catch{}volume();updateButton();if(enabled)void unlock();};
+  preview.onclick=async()=>{
+    if(!enabled){notify('请先打开音效');return;}
+    if(!await unlock()){notify('魔方录音暂时无法加载，请确认本地服务已启动后重试');return;}
+    if(previewToken)finish(previewToken);previewToken=begin(performance.now(),480);
+  };
+  document.addEventListener('pointerdown',()=>{void unlock();},{capture:true,passive:true});
+  document.addEventListener('keydown',()=>{void unlock();},{capture:true});
+  document.addEventListener('visibilitychange',volume);updateButton();
+  return {begin,finish};
+})();
+
+const scene=new THREE.Scene(), camera=new THREE.PerspectiveCamera(34,1,.1,100);camera.position.set(5,4.2,6.4);camera.lookAt(0,0,0);
+const renderer=new THREE.WebGLRenderer({canvas,alpha:true,antialias:true});renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.setClearColor(0,0);renderer.outputColorSpace=THREE.SRGBColorSpace;
+scene.add(new THREE.HemisphereLight(0xe6efff,0x414650,2.15));const keyLight=new THREE.DirectionalLight(0xffffff,3.2);keyLight.position.set(4,7,5);scene.add(keyLight);const fillLight=new THREE.DirectionalLight(0xa9c4ff,1.2);fillLight.position.set(-5,2,-4);scene.add(fillLight);
+const rig=new THREE.Group();scene.add(rig);let pieces=[],moves=[],scrambleMoves=[],viewX=-25,viewY=-34,drag=null,startedAt=0,elapsed=0,timerState='idle',timerRAF=null,toastTimer,stateRevision=0;
+let aiTimerActive=false;
+const rot=(v,axis,dir)=>{let [x,y,z]=v;if(axis==='x')return dir>0?[x,-z,y]:[x,z,-y];if(axis==='y')return dir>0?[z,y,-x]:[-z,y,x];return dir>0?[-y,x,z]:[y,-x,z]};
+function makeCubie(x,y,z){const group=new THREE.Group();group.position.set(x,y,z);const dark=new THREE.Mesh(new THREE.BoxGeometry(.96,.96,.96),new THREE.MeshStandardMaterial({color:0x11151c,roughness:.36,metalness:.08}));group.add(dark);const mats=[colors.R,colors.L,colors.U,colors.D,colors.F,colors.B].map(c=>new THREE.MeshStandardMaterial({color:c,roughness:.3,metalness:.02}));const dirs=[[1,0,0],[-1,0,0],[0,1,0],[0,-1,0],[0,0,1],[0,0,-1]];dirs.forEach((d,i)=>{const n=faces.find(f=>f[1][0]===d[0]&&f[1][1]===d[1]&&f[1][2]===d[2]);const name=n[0],on=(name==='R'&&x===1)||(name==='L'&&x===-1)||(name==='U'&&y===1)||(name==='D'&&y===-1)||(name==='F'&&z===1)||(name==='B'&&z===-1);if(!on)return;const plate=new THREE.Mesh(new THREE.BoxGeometry(.82,.82,.035),mats[i]);plate.position.set(d[0]*.493,d[1]*.493,d[2]*.493);if(d[0])plate.rotation.y=Math.PI/2;if(d[1])plate.rotation.x=-Math.PI/2;plate.position.x+=d[0]*.001;plate.position.y+=d[1]*.001;plate.position.z+=d[2]*.001;group.add(plate)});rig.add(group);return {home:[x,y,z],pos:[x,y,z],normals:faces.map(f=>f[1].slice()),el:group}}
+function build(){stateRevision++;for(const p of pieces)rig.remove(p.el);pieces=[];for(let x=-1;x<=1;x++)for(let y=-1;y<=1;y++)for(let z=-1;z<=1;z++)pieces.push(makeCubie(x,y,z));render()}
+function resize(){const r=stage.getBoundingClientRect();if(!r.width||!r.height)return;renderer.setSize(r.width,r.height,false);camera.aspect=r.width/r.height;const angle=Math.min(camera.fov*Math.PI/360,Math.atan(Math.tan(camera.fov*Math.PI/360)*camera.aspect));camera.position.set(5,4.2,6.4).normalize().multiplyScalar(2.65/Math.sin(angle));camera.lookAt(0,0,0);camera.updateProjectionMatrix();render()}
+function render(){rig.rotation.order='YXZ';rig.rotation.set(THREE.MathUtils.degToRad(viewX),THREE.MathUtils.degToRad(viewY),0,'YXZ');renderer.render(scene,camera)}
+let turnQueue=[],turnActive=false,scrambleBusy=false,scrambleStep=0,scramblePlanned=[];
+function animateVisualTurn(move,record=true){
+  return new Promise(resolve=>{turnQueue.push({move,record,resolve});nextTurn()});
+}
+function nextTurn(){
+  if(turnActive||!turnQueue.length)return;
+  turnActive=true;
+  const job=turnQueue.shift(),{axis,layer,dir}=parseMove(job.move),coord={x:0,y:1,z:2}[axis];
+  const vector=new THREE.Vector3(axis==='x'?1:0,axis==='y'?1:0,axis==='z'?1:0);
+  const selected=pieces.filter(p=>p.pos[coord]===layer).map(p=>({p,position:p.el.position.clone(),orientation:p.el.quaternion.clone()}));
+  const start=performance.now(),duration=Math.abs(dir)===2?650:480;
+  const sound=turnSound.begin(start,duration);
+  document.querySelector('#statusText').textContent='正在转动 '+job.move;
+  function frame(now){
+    const t=Math.min(1,(now-start)/duration),ease=t*t*(3-2*t);
+    const rotation=new THREE.Quaternion().setFromAxisAngle(vector,dir*Math.PI/2*ease);
+    for(const {p,position,orientation} of selected){
+      p.el.position.copy(position).applyQuaternion(rotation);
+      p.el.quaternion.copy(rotation).multiply(orientation);
+    }
+    render();
+    if(t<1){requestAnimationFrame(frame);return}
+    for(const {p} of selected){
+      for(let i=0;i<Math.abs(dir);i++){p.pos=rot(p.pos,axis,Math.sign(dir));p.normals=p.normals.map(n=>rot(n,axis,Math.sign(dir)))}
+      p.el.position.set(...p.pos);
+    }
+    stateRevision++;
+    turnSound.finish(sound);
+    if(job.record){moves.push(job.move);renderHistory()}
+    turnActive=false;updateStatus();render();job.resolve();nextTurn();
+  }
+  requestAnimationFrame(frame);
+}
+const axisInfo={R:['x',1,-1],L:['x',-1,1],U:['y',1,-1],D:['y',-1,1],F:['z',1,-1],B:['z',-1,1]};
+const CUBE_RULES=`三阶魔方规则上下文（必须遵守）：
+1. 标准记号：R右、L左、U顶、D底、F前、B后；字母后跟'为逆时针，后跟2为180度。
+2. 观察方向固定为F面朝向观察者、U面在上、R面在右；x轴向右，y轴向上，z轴从后指向前。
+3. 每个转动只影响对应外层的9个小块；中心块定义各面的颜色和方向。顺逆时针以正对被转动的面观察。
+4. 合法单步只能是 R、R'、R2、L、L'、L2、U、U'、U2、D、D'、D2、F、F'、F2、B、B'、B2。
+5. 必须保持魔方可达状态：不能单独翻转棱块、单独扭转角块或只交换两个小块；每一步必须是完整层转动。
+6. 复原判定是六个中心面各自的8个外部贴纸都与该中心颜色一致；确认复原后选择STOP。
+7. 求解遵循底层十字、底层一面、中层棱块、顶层十字、顶面同色、顶角归位、顶棱归位的七步法。历史公式仅作参考，不以倒放打乱代替分层复原；只有实际贴纸状态通过全部检查才可宣告完成。`;
+const SEVEN_STEPS=[
+  ['底层十字','将四个带底色的棱块放入 D 层并定向；每个棱块的侧面颜色也须对齐对应中心。先在 U 层对齐侧色，再用对应面的半圈送到底层，避免破坏已完成棱块。'],
+  ['底层一面','在底层十字正确的基础上插入四个底层角块。底面同色且四个侧面的第一排与中心同色，才算完成第一层。将目标角移到槽位上方，再调整朝向并插入。'],
+  ['中层棱块','找 U 层不带顶色的棱块，先对齐正面中心，再按目标槽位向左或向右插入；错误占槽的棱块先取出。保持完整底层。'],
+  ['顶层十字','保持前两层，将 U 层四个棱块的顶色朝上。按点、折线、一字、十字识别形态；此阶段不要求顶层侧色归位。'],
+  ['顶面同色','保持前两层及顶层十字，使四个顶角的顶色朝上。区分顶角朝向形态；顶面同色尚不等于整个魔方复原。'],
+  ['顶层角块归位','在顶面同色基础上排列顶角，使每个角的三色对应所在位置的三个中心。必要时调整 U 层；完成后四个角的位置和朝向都正确。'],
+  ['顶层棱块归位','排列最后四个顶棱，使六面所有贴纸与各自中心同色。保持顶角、前两层和顶面朝向；仅在实际状态完全复原时结束。']
+];
+function serializeCube(){return pieces.filter(p=>p.home.some(v=>v!==0)).map(p=>({
+  position:p.pos.slice(),
+  stickers:faces.flatMap(([face,normal],i)=>normal.reduce((s,v,j)=>s+v*p.home[j],0)===1
+    ?[{color:colors[face],homeFace:face,normal:p.normals[i].slice()}]:[])
+}));}
+const cubeStateKey='cubeLab.cube.v1';
+function persistCube(){
+  try{localStorage.setItem(cubeStateKey,JSON.stringify({version:1,cube:serializeCube(),moves,scrambleMoves,viewX,viewY}));}catch{}
+}
+function restoreCube(){
+  let saved;
+  try{saved=JSON.parse(localStorage.getItem(cubeStateKey)||'null');if(!saved||saved.version!==1)return;
+    CornerPlanner.validate(saved.cube);
+  }catch{return;}
+  for(const p of pieces){
+    if(!p.home.some(v=>v!==0))continue;
+    const homeFaces=faces.filter(([,n])=>n.reduce((sum,v,i)=>sum+v*p.home[i],0)===1).map(([f])=>f);
+    const current=saved.cube.find(c=>c.stickers.length===homeFaces.length&&homeFaces.every(f=>c.stickers.some(s=>s.homeFace===f)));
+    if(!current)return;
+    const [a,b]=current.stickers, homeA=new THREE.Vector3(...CrossPlanner.NORMALS[a.homeFace]),worldA=new THREE.Vector3(...a.normal);
+    let rotation=new THREE.Quaternion();
+    if(b){
+      const homeB=new THREE.Vector3(...CrossPlanner.NORMALS[b.homeFace]),worldB=new THREE.Vector3(...b.normal);
+      const homeBasis=new THREE.Matrix4().makeBasis(homeA,homeB,new THREE.Vector3().crossVectors(homeA,homeB));
+      const worldBasis=new THREE.Matrix4().makeBasis(worldA,worldB,new THREE.Vector3().crossVectors(worldA,worldB));
+      rotation.setFromRotationMatrix(worldBasis.multiply(homeBasis.transpose()));
+    }else rotation.setFromUnitVectors(homeA,worldA);
+    p.pos=current.position.slice();p.el.position.set(...p.pos);p.el.quaternion.copy(rotation);
+    p.normals=faces.map(([,normal])=>new THREE.Vector3(...normal).applyQuaternion(rotation).toArray().map(v=>Math.round(v)||0));
+  }
+  moves=Array.isArray(saved.moves)?saved.moves.filter(m=>CrossPlanner.MOVES.includes(m)):[];
+  scrambleMoves=Array.isArray(saved.scrambleMoves)?saved.scrambleMoves.filter(m=>CrossPlanner.MOVES.includes(m)):[];
+  if(Number.isFinite(saved.viewX))viewX=saved.viewX;if(Number.isFinite(saved.viewY))viewY=saved.viewY;
+  stateRevision++;render();renderHistory();
+  if(scrambleMoves.length){document.querySelector('#scramble').className='scramble';document.querySelector('#scramble').textContent=scrambleMoves.join(' ');}
+}
+function sevenProgress(){
+  const state=serializeCube(),same=(a,b)=>a.every((v,i)=>v===b[i]);
+  const correct=p=>p.stickers.every(s=>same(s.normal,faces.find(f=>f[0]===s.homeFace)[1]));
+  const layer=(y,n)=>state.filter(p=>p.position[1]===y&&(!n||p.stickers.length===n));
+  const up=p=>p.stickers.some(s=>s.homeFace==='U'&&same(s.normal,[0,1,0]));
+  const bottomCross=layer(-1,2).every(correct);
+  const bottom=bottomCross&&layer(-1).every(correct);
+  const middle=bottom&&layer(0,2).every(correct);
+  const topCross=middle&&layer(1,2).every(up);
+  const topFace=topCross&&layer(1,3).every(up);
+  const corners=topFace&&layer(1,3).every(correct);
+  const done=[bottomCross,bottom,middle,topCross,topFace,corners,state.every(correct)];
+  const index=done.findIndex(x=>!x);
+  return {done,index,solved:index===-1};
+}
+function sevenContext(){
+  const progress=sevenProgress();
+  return '按七步法分层复原，底面固定 D（黄色），顶面 U（白色）。拖动视角不改变面定义。\n'
+    +SEVEN_STEPS.map(([name,rule],i)=>(i+1)+'. '+name+'：'+rule).join('\n')
+    +'\n当前阶段：'+(progress.solved?'全部完成':(progress.index+1)+'. '+SEVEN_STEPS[progress.index][0])
+    +'\n已达成检查：'+JSON.stringify(progress.done)
+    +'\n按当前阶段选择下一转动，不能通过倒放打乱公式替代七步法。完整公式中间允许暂时打破已完成部分，但应继续原计划将其恢复；不要因中间状态反复改换策略。单步选择能力有限，不得把日志或模型自评当作完成依据。';
+}
+const progressPanel=document.createElement('div');progressPanel.className='cross-progress';
+document.querySelector('.ai-live-title').after(progressPanel);
+let selectedGoal='cross';
+const planners={cross:CrossPlanner,corners:CornerPlanner,...LayerPlanners};
+const stageOrder=Object.keys(planners);
+const stageNames={cross:'底层十字',corners:'底层一面',middle:'中层棱块',topCross:'顶层十字',topFace:'顶面同色',topCorners:'顶层角块归位',topEdges:'顶层棱块归位'};
+const stageNumber=goal=>stageOrder.indexOf(goal)+1;
+function firstIncompleteGoal(){const state=serializeCube();return stageOrder.find(goal=>!planners[goal].status(state).complete)||'topEdges';}
+const stageTabs=document.createElement('div');stageTabs.className='stage-tabs';
+stageTabs.innerHTML=stageOrder.map((goal,i)=>'<button class="secondary" data-goal="'+goal+'" aria-pressed="'+(goal===selectedGoal)+'">'+(i+1)+' · '+stageNames[goal]+'</button>').join('');
+progressPanel.before(stageTabs);
+function renderSevenProgress(){
+  if(!pieces.length)return;
+  const p=planners[selectedGoal].status(serializeCube());progressPanel.replaceChildren();
+  const number=stageNumber(selectedGoal),orientation=number===4||number===5;
+  const title=document.createElement('strong');title.textContent='第'+number+'步 · '+stageNames[selectedGoal]+' '+p.count+'/4';progressPanel.append(title);
+  if(number>1){const prerequisite=document.createElement('small');prerequisite.className='stage-prerequisite';prerequisite.textContent=p.prerequisiteComplete?'✓ 前置阶段已完成，需保持':aiBusy?'公式执行中，结束后恢复前置阶段':'请先完成第'+(number-1)+'步 · '+stageNames[stageOrder[number-2]];progressPanel.append(prerequisite);}
+  (p.items||p.corners||p.edges).forEach(item=>{const row=document.createElement('div');row.textContent=(item.solved?'✓ ':'○ ')+item.name+(orientation?(item.solved?' · 白色朝上':' · 待定向'):(item.solved?' · 已对齐':' · 待归位'));row.style.color=item.solved?'#b6f36a':'#d7e0eb';progressPanel.append(row);});
+  const note=document.createElement('small');note.textContent=number===7?'保护前两层和顶角 · 六面全部对齐后复原':number===6?'四个顶角位置、三色全部对齐 · 顶棱留给第7步':orientation?'形态：'+p.shape+' · 此步仅定向，侧色顺序留给后续步骤':selectedGoal==='middle'?'底层完整 + 四个中棱位置、朝向正确':selectedGoal==='corners'?'底面同色 + 第一层侧色对齐 · 完成后停止':'黄色朝下 · 侧色对齐 · 完成后停止';progressPanel.append(note);
+  if(p.wholeCube){
+    const total=document.createElement('strong');total.textContent=(p.wholeCube.complete?'✓ 整个魔方已复原':'六面贴纸检查')+' · '+p.wholeCube.count+'/54';progressPanel.append(total);
+    p.wholeCube.faces.forEach(face=>{const row=document.createElement('div');row.textContent=(face.complete?'✓ ':'○ ')+face.name+' '+face.count+'/9';row.style.color=face.complete?'#b6f36a':'#d7e0eb';progressPanel.append(row);});
+  }
+}
+function jevTransport(){return location.protocol==='file:'?'http://127.0.0.1:8787/api/jev':'/api/jev';}
+const aiDialog=document.querySelector('#aiDialog'), aiLog=document.querySelector('#aiLog'),aiLiveLog=document.querySelector('#aiLiveLog'),aiConfigKey='cubeLab.aiConfig.v1',aiLogKey='cubeLab.aiLog.v1';let aiBusy=false;
+document.querySelector('#aiDialog .cardtitle').textContent='✦ 分层复原 · AI 设置';
+document.querySelector('#aiGoal').innerHTML=stageOrder.map((goal,i)=>'<option value="'+goal+'">第'+(i+1)+'步：'+stageNames[goal]+'（完成后停止）</option>').join('');
+function loadAIConfig(){
+  document.querySelector('#aiEndpoint').value='https://api.typesafe.ai/v1/systemone';
+  document.querySelector('#aiModel').value='jev-latest';
+  try{const c=JSON.parse(localStorage.getItem(aiConfigKey)||'{}');if(c.model)document.querySelector('#aiModel').value=c.model;if(c.apiKey)document.querySelector('#aiKey').value=c.apiKey;}catch{}
+  document.querySelector('#aiGoal').value=selectedGoal;
+}
+function saveAIConfig(){
+  const c={endpoint:'https://api.typesafe.ai/v1/systemone',model:document.querySelector('#aiModel').value.trim()||'jev-latest',apiKey:document.querySelector('#aiKey').value.trim(),goal:selectedGoal};
+  try{localStorage.setItem(aiConfigKey,JSON.stringify(c));notify('AI 设置已保存');if(aiDialog.open)aiDialog.close();return true;}
+  catch{notify('浏览器无法保存设置，请允许本地存储');return false;}
+}
+let aiEvents=[];
+try{const saved=JSON.parse(localStorage.getItem(aiLogKey)||'[]');if(Array.isArray(saved))aiEvents=saved;}catch{}
+function addAILog(message,details={}){
+  if(typeof details==='boolean')details={error:details};
+  aiEvents.push({...details,time:new Date().toLocaleTimeString(),message});aiEvents=aiEvents.slice(-400);
+  try{localStorage.setItem(aiLogKey,JSON.stringify(aiEvents));}catch{}
+  renderAILog();
+}
+function renderAILog(){
+  for(const container of [aiLog,aiLiveLog]){
+    container.replaceChildren();
+    if(!aiEvents.length){const empty=document.createElement('span');empty.textContent='等待 AI 分层复原…';container.append(empty);continue;}
+    for(const item of aiEvents){
+      const row=document.createElement('div');row.className='ai-log-entry'+(item.error?' ai-error':'');
+      row.textContent='['+item.time+'] '+item.message;container.append(row);
+    }
+    container.scrollTop=container.scrollHeight;
+  }
+}
+let allRun=false,allStopRequested=false;
+let crossUI={phase:'idle',running:false,candidates:[],step:0,total:0,activePlan:null};
+const livePanel=document.querySelector('.ai-live'),liveStatus=document.createElement('div'),candidateList=document.createElement('div'),liveButtons=document.createElement('div');
+liveStatus.className='cross-status';liveStatus.setAttribute('aria-live','polite');candidateList.className='cross-candidates';
+liveButtons.className='cross-buttons';
+liveButtons.innerHTML='<button type="button" id="allStepsStart" class="primary" style="grid-column:1/-1">一键完成七步</button><button type="button" id="crossStart" class="primary">开始底层十字</button><button type="button" id="crossStop" class="secondary" disabled>停止</button><button type="button" id="crossSettings" class="micro">AI 设置</button><button type="button" id="crossExport" class="micro">导出记录</button>';
+const candidateDetails=document.createElement('details'),candidateSummary=document.createElement('summary');
+candidateDetails.className='cross-options';candidateDetails.append(candidateSummary,candidateList);
+aiLiveLog.before(liveStatus,candidateDetails,liveButtons);
+function renderCrossUI(change){
+  crossUI={...crossUI,...change};
+  const alreadyComplete=pieces.length&&planners[selectedGoal].status(serializeCube()).complete;
+  const completionText=selectedGoal==='topEdges'?'整个魔方已复原 · 六面贴纸 54/54':stageNames[selectedGoal]+'完成，已自动停止';
+  const labels={idle:alreadyComplete?completionText:'准备开始第'+stageNumber(selectedGoal)+'步：'+stageNames[selectedGoal],planning:'正在生成并模拟方案',deciding:'等待 Jev 选择方案',executing:'正在执行完整方案',verified:'方案检查通过',complete:completionText,paused:'Jev 选择暂停',stopping:selectedGoal!=='cross'?'正在停止，等待当前公式结束以恢复前置阶段':'正在停止，等待当前转动完成',stopped:'已停止，可从当前状态继续',error:'已暂停'};
+  const parts=[...(allRun?['一键复原 · 第 '+stageNumber(selectedGoal)+' / 7 步']:[]),scrambleBusy?'正在打乱 '+scrambleStep+'/'+scramblePlanned.length+' · '+(scramblePlanned[scrambleStep-1]||''):(labels[crossUI.phase]||crossUI.phase)];
+  if(crossUI.activePlan&&['executing','stopping'].includes(crossUI.phase)){
+    parts.push('目标：'+crossUI.activePlan.target);
+    parts.push('公式：'+crossUI.activePlan.moves.join(' '));
+    parts.push('转动 '+crossUI.step+'/'+crossUI.total+' · '+(crossUI.notation||''));
+    if(crossUI.segment)parts.push(crossUI.segment);
+    parts.push('本方案起点 '+crossUI.baseline+'/4，方案结束后检查保护结果');
+  }
+  if(crossUI.error)parts.push(crossUI.error);
+  liveStatus.textContent=parts.join('\n');
+  candidateSummary.textContent='已验证的候选方案（'+crossUI.candidates.length+'）';
+  candidateList.replaceChildren();
+  for(const p of crossUI.candidates){
+    const row=document.createElement('div');row.className='cross-candidate'+(crossUI.activePlan?.id===p.id?' selected':'');
+    row.textContent=p.id+' · '+p.target+'\n'+p.moves.join(' ')+'\n'+p.beforeCount+'/4 → '+p.afterCount+'/4 · '+p.moves.length+' 次转动';candidateList.append(row);
+  }
+  const busy=crossUI.running||allRun||scrambleBusy;
+  document.querySelector('#allStepsStart').disabled=busy;
+  document.querySelector('#allStepsStart').textContent=allRun?'正在连续完成七步…':'一键完成七步';
+  document.querySelector('#crossStart').disabled=busy;
+  document.querySelector('#crossStart').textContent='开始'+stageNames[selectedGoal];
+  document.querySelector('#crossStop').disabled=scrambleBusy||!busy||crossUI.phase==='stopping'||allStopRequested;
+  document.querySelector('#aiRun').disabled=busy;
+  document.querySelector('#aiOpen').disabled=busy;
+  document.querySelector('#aiGoal').disabled=busy;
+  stageTabs.querySelectorAll('button').forEach(button=>{button.disabled=busy;button.setAttribute('aria-pressed',String(button.dataset.goal===selectedGoal));});
+}
+const controllerAPI={
+  snapshot:serializeCube,revision:()=>stateRevision,idle:()=>!scrambleBusy&&!turnActive&&!turnQueue.length,
+  execute:m=>applyMove(m),log:addAILog,update:renderCrossUI,
+  lock(value){
+    const wasBusy=aiBusy;aiBusy=value||allRun;
+    if(aiBusy&&!wasBusy&&!planners[selectedGoal].status(serializeCube()).complete){aiTimerActive=true;startTimer('AI 自动计时中');}
+    if(!aiBusy&&wasBusy&&aiTimerActive){aiTimerActive=false;pauseTimer(planners.topEdges.status(serializeCube()).complete?'AI 复原完成':'AI 计时已暂停');}
+    for(const id of ['newScramble','resetTop','resetBtn','undoTop','undoBtn','timerBtn','timerReset'])document.querySelector('#'+id).disabled=aiBusy;
+    document.querySelectorAll('#controls button').forEach(b=>b.disabled=aiBusy);}
+};
+const controllers=Object.fromEntries(stageOrder.map(goal=>[goal,CrossController.create(controllerAPI,planners[goal])]));
+const isAIRunning=()=>scrambleBusy||allRun||Object.values(controllers).some(controller=>controller.running);
+function selectGoal(goal,internal=false){
+  if(scrambleBusy||Object.values(controllers).some(controller=>controller.running)||(allRun&&!internal)||!planners[goal])return;
+  selectedGoal=goal;document.querySelector('#aiGoal').value=goal;
+  renderSevenProgress();renderCrossUI({phase:'idle',error:'',candidates:[],activePlan:null,step:0,total:0,segment:''});
+}
+stageTabs.querySelectorAll('button').forEach(button=>button.onclick=()=>selectGoal(button.dataset.goal));
+document.querySelector('#aiGoal').onchange=event=>selectGoal(event.target.value);
+async function runAI(){
+  if(isAIRunning())return;
+  if(turnActive||turnQueue.length){notify('请等待当前转动完成');return;}
+  try{planners[selectedGoal].ready?.(serializeCube());}catch(error){notify(error.message);renderCrossUI({phase:'error',error:error.message+'。请从左侧选择对应阶段。'});return;}
+  if(!document.querySelector('#aiKey').value.trim()&&!planners[selectedGoal].status(serializeCube()).complete){if(!aiDialog.open)aiDialog.show();notify('请先填写 API Key');return;}
+  if(!saveAIConfig())return;
+  renderCrossUI({error:'',candidates:[],activePlan:null,step:0,total:0});
+  await controllers[selectedGoal].start({model:document.querySelector('#aiModel').value.trim()||'jev-latest',apiKey:document.querySelector('#aiKey').value.trim(),transport:jevTransport()});
+  if(planners[selectedGoal].status(serializeCube()).complete){const next=stageOrder[stageNumber(selectedGoal)];if(next){const finished=stageNames[selectedGoal];selectGoal(next);notify(finished+'完成，可以开始第'+stageNumber(next)+'步'+stageNames[next]);}}
+}
+document.querySelector('#crossStart').onclick=runAI;
+async function runAllAI(){
+  if(isAIRunning())return;
+  if(turnActive||turnQueue.length){notify('请等待当前转动完成');return;}
+  selectGoal(firstIncompleteGoal());
+  if(planners.topEdges.status(serializeCube()).complete){notify('魔方已经复原，无需调用 Jev');renderCrossUI({phase:'complete'});return;}
+  if(!document.querySelector('#aiKey').value.trim()){if(!aiDialog.open)aiDialog.show();notify('请先填写 API Key，再点击一键完成七步');return;}
+  if(!saveAIConfig())return;
+  const config={model:document.querySelector('#aiModel').value.trim()||'jev-latest',apiKey:document.querySelector('#aiKey').value.trim(),transport:jevTransport(),continuous:true};
+  allRun=true;allStopRequested=false;controllerAPI.lock(true);
+  renderCrossUI({phase:'idle',error:'',candidates:[],activePlan:null,step:0,total:0});
+  addAILog('一键复原开始：从当前状态连续完成七步，已完成阶段自动跳过',{type:'all-start',initialState:serializeCube()});
+  try{
+    for(const goal of stageOrder){
+      if(allStopRequested)break;
+      if(planners[goal].status(serializeCube()).complete)continue;
+      selectGoal(goal,true);
+      addAILog('自动进入第'+stageNumber(goal)+'步：'+stageNames[goal],{type:'all-stage',stage:stageNumber(goal)});
+      await new Promise(resolve=>requestAnimationFrame(resolve));
+      if(allStopRequested)break;
+      const result=await controllers[goal].start(config);
+      if(allStopRequested)break;
+      if(result?.status!=='complete'||!planners[goal].status(serializeCube()).complete){
+        addAILog('一键复原已暂停于第'+stageNumber(goal)+'步，不再进入下一阶段',{type:'all-paused',stage:stageNumber(goal)});return;
+      }
+    }
+    if(allStopRequested){addAILog('一键复原已停止；再次点击可从当前状态继续',{type:'all-stopped'});renderCrossUI({phase:'stopped'});return;}
+    const finalProgress=planners.topEdges.status(serializeCube());
+    if(!finalProgress.complete)throw new Error('最终六面检查未通过，已暂停');
+    selectGoal('topEdges',true);
+    addAILog('一键七步全部完成：六面贴纸54/54，整个魔方已复原',{type:'all-complete',finalState:serializeCube(),wholeCube:finalProgress.wholeCube});
+    renderCrossUI({phase:'complete'});notify('七步完成，魔方已复原！');
+  }catch(error){
+    const message=String(error.message).split(config.apiKey).join('[隐藏]');
+    addAILog('一键复原已暂停：'+message,{type:'all-error',error:true});renderCrossUI({phase:'error',error:message});
+  }finally{allRun=false;allStopRequested=false;controllerAPI.lock(false);renderCrossUI({running:false});persistCube();}
+}
+document.querySelector('#allStepsStart').onclick=runAllAI;
+document.querySelector('#crossStop').onclick=()=>{if(allRun)allStopRequested=true;controllers[selectedGoal].stop();renderCrossUI({phase:'stopping'});};
+document.querySelector('#crossSettings').onclick=()=>aiDialog.open?aiDialog.close():aiDialog.show();
+document.querySelector('#crossExport').onclick=()=>{
+  const url=URL.createObjectURL(new Blob([JSON.stringify({format:'cube-layer-log-v2',events:aiEvents},null,2)],{type:'application/json'}));
+  const link=document.createElement('a');link.href=url;link.download='cube-layer-log.json';link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
+};
+renderCrossUI({});
+
+function parseMove(m){let face=m[0],prime=m.includes("'");let [axis,layer,base]=axisInfo[face];return {face,axis,layer,dir:base*(prime?-1:1)*(m.includes('2')?2:1)}}
+function applyMove(move,record=true,animate=true){
+  if(animate)return animateVisualTurn(move,record);
+  const {axis,layer,dir}=parseMove(move),coord={x:0,y:1,z:2}[axis];
+  const vector=new THREE.Vector3(axis==='x'?1:0,axis==='y'?1:0,axis==='z'?1:0);
+  const rotation=new THREE.Quaternion().setFromAxisAngle(vector,dir*Math.PI/2);
+  for(const p of pieces)if(p.pos[coord]===layer){
+    for(let i=0;i<Math.abs(dir);i++){p.pos=rot(p.pos,axis,Math.sign(dir));p.normals=p.normals.map(n=>rot(n,axis,Math.sign(dir)))}
+    p.el.position.set(...p.pos);p.el.quaternion.premultiply(rotation);
+  }
+  stateRevision++;
+  if(record){moves.push(move);renderHistory();updateStatus()}render();
+}
+function invert(m){if(m.endsWith('2'))return m;return m.endsWith("'")?m[0]:m+"'"}
+const moveDefs=[['U','上层','U'],['D','下层','D'],['L','左层','L'],['R','右层','R'],['F','前层','F'],['B','后层','B']];
+function setupControls(){const c=document.querySelector('#controls');c.style.gridTemplateColumns='repeat(3,minmax(0,1fr))';for(const [key,label] of moveDefs){const title=document.createElement('div');title.style.cssText='grid-column:1/-1;font-size:12px;padding-top:6px';title.textContent=key+' · '+label;c.appendChild(title);for(const [suffix,text] of [['','顺转90°'],["'",'逆转90°'],['2','半圈180°']]){const b=document.createElement('button');b.className='movebtn';b.textContent=key+suffix;b.title=label+' '+text;const detail=document.createElement('small');detail.style.cssText='display:block;font-size:9px;margin-top:5px;color:#c6d0de';detail.textContent=text;b.appendChild(detail);b.onclick=()=>doTurn(key+suffix);c.appendChild(b)}}}
+function doTurn(m){if(aiBusy||scrambleBusy){notify('正在自动转动，请等待本轮结束');return}applyMove(m);}
+async function undoMove(){if(turnActive||aiBusy||scrambleBusy||turnQueue.length)return;let m=moves.pop();if(!m){notify('没有可撤销的转动');return}await applyMove(invert(m),false);renderHistory();updateStatus()}
+function renderHistory(){historyEl.innerHTML='';if(!moves.length){historyEl.innerHTML='<div class="emptyhist">转动后会显示在这里</div>';return}for(const m of moves.slice(-35)){let s=document.createElement('span');s.className='chip';s.textContent=m;historyEl.appendChild(s)}historyEl.scrollTop=historyEl.scrollHeight}
+function renderScrambleSequence(seq,completed,current=-1){
+  const container=document.querySelector('#scramble');container.className='scramble';container.replaceChildren();
+  seq.forEach((notation,i)=>{const token=document.createElement('span');token.textContent=notation+' ';token.style.cssText='display:inline-block;padding:2px 4px;border-radius:4px;';
+    if(i===current){token.style.background='var(--accent)';token.style.color='#18200f';token.style.fontWeight='bold';token.setAttribute('aria-current','step');}
+    else token.style.opacity=i<completed?'1':'.4';container.append(token);});
+  document.querySelector('#scrambleLen').textContent=scrambleBusy?completed+'/'+seq.length+' 已完成':completed+'/'+seq.length+' 完成';
+}
+async function scramble(){
+  if(turnActive||aiBusy||scrambleBusy||turnQueue.length){notify('请等待当前转动完成');return;}
+  const choices=['R','L','U','D','F','B'],seq=[];let last='';
+  for(let i=0;i<20;i++){let f;do{f=choices[Math.floor(Math.random()*6)];}while(f===last);last=f;seq.push(f+['',"'",'2'][Math.floor(Math.random()*3)]);}
+  resetTimer();selectGoal('cross');moves=[];scrambleMoves=[];renderHistory();scramblePlanned=seq;scrambleStep=0;scrambleBusy=true;
+  const lockedIds=['newScramble','resetTop','resetBtn','undoTop','undoBtn','timerBtn','timerReset','clearHistory','copyScramble'];
+  lockedIds.forEach(id=>document.querySelector('#'+id).disabled=true);document.querySelectorAll('#controls button').forEach(b=>b.disabled=true);
+  document.querySelector('#newScramble').textContent='正在打乱…';
+  addAILog('开始实际打乱：'+seq.join(' '),{type:'scramble-start',plannedMoves:seq});
+  let success=false;
+  try{
+    for(let i=0;i<seq.length;i++){
+      scrambleStep=i+1;renderScrambleSequence(seq,i,i);renderCrossUI({phase:'scrambling',candidates:[],activePlan:null,error:''});
+      await applyMove(seq[i],false,true);
+      scrambleMoves.push(seq[i]);persistCube();renderScrambleSequence(seq,i+1);
+      addAILog('打乱 '+(i+1)+'/'+seq.length+'：已执行 '+seq[i],{type:'scramble-move',move:seq[i],step:i+1});
+    }
+    success=true;addAILog('20步打乱完成，可以开始手动或 AI 复原',{type:'scramble-complete',moves:scrambleMoves.slice()});notify('打乱完成，挑战开始！');
+  }catch(error){addAILog('打乱中止：'+error.message,{type:'scramble-error',error:true});notify('打乱中止，已保留实际完成的转动');}
+  finally{
+    scrambleBusy=false;lockedIds.forEach(id=>document.querySelector('#'+id).disabled=false);document.querySelectorAll('#controls button').forEach(b=>b.disabled=false);
+    document.querySelector('#newScramble').textContent='↻　重新打乱';renderScrambleSequence(seq,scrambleMoves.length);updateStatus();
+    if(!success)document.querySelector('#scrambleLen').textContent='已中止 · '+scrambleMoves.length+'/'+seq.length;
+  }
+}
+function resetCube(){if(turnActive||aiBusy||scrambleBusy||turnQueue.length){notify("请等待当前转动完成");return}build();moves=[];scrambleMoves=[];renderHistory();document.querySelector('#scramble').className='scramble empty';document.querySelector('#scramble').textContent='生成一组随机公式，开始挑战。';resetTimer();viewX=-25;viewY=-34;render();selectGoal('cross');updateStatus();notify('魔方已复原')}
+function updateStatus(){renderSevenProgress();const goal=aiBusy?selectedGoal:firstIncompleteGoal(),p=planners[goal].status(serializeCube());document.querySelector('#statusText').textContent=scrambleBusy?'正在打乱 '+scrambleStep+'/'+scramblePlanned.length+' · '+(scramblePlanned[scrambleStep-1]||''):p.complete&&goal==='topEdges'?'魔方已复原 · 六面全部对齐 · 54/54':'第'+stageNumber(goal)+'步 · '+stageNames[goal]+' '+p.count+'/4';if(!aiBusy&&!isAIRunning())renderCrossUI({phase:'idle',candidates:[],activePlan:null,error:''});persistCube();}
+function notify(s){const t=document.querySelector('#toast');t.textContent=s;t.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove('show'),1800)}
+function fmt(ms){let cs=Math.floor(ms/10)%100,sec=Math.floor(ms/1000)%60,min=Math.floor(ms/60000);return `${String(min).padStart(2,'0')}:${String(sec).padStart(2,'0')}.${String(cs).padStart(2,'0')}`}
+function tick(){if(timerState!=='running')return;elapsed=performance.now()-startedAt;document.querySelector('#time').textContent=fmt(elapsed);timerRAF=requestAnimationFrame(tick)}
+function startTimer(label='计时中'){
+  document.querySelector('#timerLabel').textContent=label;document.querySelector('#timerBtn').textContent='暂停计时';
+  if(timerState==='running')return;
+  timerState='running';startedAt=performance.now()-elapsed;tick();
+}
+function pauseTimer(label='已暂停'){
+  if(timerState==='running')elapsed=performance.now()-startedAt;
+  timerState='stopped';cancelAnimationFrame(timerRAF);timerRAF=null;
+  document.querySelector('#time').textContent=fmt(elapsed);document.querySelector('#timerBtn').textContent='继续';document.querySelector('#timerLabel').textContent=label;
+}
+function toggleTimer(){if(aiBusy||scrambleBusy)return;if(timerState==='running')pauseTimer();else startTimer();}
+function resetTimer(){if(aiBusy||scrambleBusy)return;aiTimerActive=false;timerState='idle';elapsed=0;cancelAnimationFrame(timerRAF);timerRAF=null;document.querySelector('#time').textContent='00:00.00';document.querySelector('#timerBtn').textContent='开始计时';document.querySelector('#timerLabel').textContent='准备就绪'}
+document.querySelector('.sidebar').prepend(aiDialog);
+const cubeArea=document.createElement('div');cubeArea.className='cube-area';
+stage.before(cubeArea);cubeArea.append(document.querySelector('.ai-live'),stage);
+new ResizeObserver(resize).observe(stage);
+setupControls();build();restoreCube();resize();
+selectGoal(firstIncompleteGoal());
+loadAIConfig();renderAILog();document.querySelector('#aiOpen').onclick=runAI;document.querySelector('#aiSave').onclick=saveAIConfig;document.querySelector('#aiRun').onclick=runAI;document.querySelector('#aiClearLog').onclick=()=>{if(aiBusy)return;aiEvents=[];try{localStorage.removeItem(aiLogKey);}catch{}renderAILog()};
+document.querySelector('#newScramble').onclick=scramble;document.querySelector('#resetBtn').onclick=resetCube;document.querySelector('#resetTop').onclick=resetCube;document.querySelector('#undoBtn').onclick=undoMove;document.querySelector('#undoTop').onclick=undoMove;document.querySelector('#timerBtn').onclick=toggleTimer;document.querySelector('#timerReset').onclick=resetTimer;document.querySelector('#clearHistory').onclick=()=>{moves=[];renderHistory();updateStatus()};document.querySelector('#copyScramble').onclick=async()=>{if(!scrambleMoves.length){notify('请先生成一组公式');return}try{await navigator.clipboard.writeText(scrambleMoves.join(' '));notify('公式已复制')}catch{notify('浏览器不支持复制')}};
+window.addEventListener('keydown',e=>{if(e.target.matches('input,textarea,select,button'))return;if(e.code==='Space'){e.preventDefault();toggleTimer();return}if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='z'){e.preventDefault();undoMove();return}const k=e.key.toUpperCase();if(axisInfo[k]){e.preventDefault();doTurn(k+(e.shiftKey?"'":''))}});
+stage.addEventListener('pointerdown',e=>{if(e.target.closest('button'))return;drag={x:e.clientX,y:e.clientY,viewX,viewY,id:e.pointerId};stage.setPointerCapture(e.pointerId)});stage.addEventListener('pointermove',e=>{if(!drag)return;viewY=drag.viewY+(e.clientX-drag.x)*.48;viewX=Math.max(-160,Math.min(160,drag.viewX-(e.clientY-drag.y)*.48));render()});stage.addEventListener('pointerup',()=>drag=null);stage.addEventListener('pointercancel',()=>drag=null);window.addEventListener('resize',resize);
+document.querySelector('#bottomView').onclick=()=>{viewX=-100;viewY=35;render();persistCube();};
+document.querySelector('#topView').onclick=()=>{viewX=25;viewY=-34;render();persistCube();};
+document.querySelector('#normalView').onclick=()=>{viewX=-25;viewY=-34;render();persistCube();};
+window.addEventListener('pagehide',persistCube);
+window.CubeLabState={snapshot:serializeCube,exportState:()=>({version:1,cube:serializeCube(),moves:moves.slice(),scrambleMoves:scrambleMoves.slice(),viewX,viewY}),isBusy:()=>aiBusy||scrambleBusy||turnActive||turnQueue.length>0};
+document.querySelector('#timerBtn').title='快捷键 Space';updateStatus();
+}
+})();
+</script></body></html>
