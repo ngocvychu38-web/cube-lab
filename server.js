@@ -3,7 +3,9 @@ const fs = require('fs');
 const path = require('path');
 
 const root = __dirname;
-const port = Number(process.env.PORT || 8787);
+const port = Number(process.env.PORT || (process.env.NODE_ENV === 'production' ? 7860 : 8787));
+const production = process.env.NODE_ENV === 'production';
+const listenHost = production ? '0.0.0.0' : '127.0.0.1';
 
 function send(res, status, type, body) {
   res.writeHead(status, { 'Content-Type': type, 'Cache-Control': 'no-store' });
@@ -11,10 +13,17 @@ function send(res, status, type, body) {
 }
 
 const server = http.createServer(async (req, res) => {
-  const allowedHosts = new Set([`127.0.0.1:${port}`, `localhost:${port}`]);
-  const allowedOrigins = new Set(['null', `http://127.0.0.1:${port}`, `http://localhost:${port}`]);
-  if (!allowedHosts.has(req.headers.host)) return send(res, 403, 'text/plain', 'Invalid host');
-  if (req.headers.origin && !allowedOrigins.has(req.headers.origin)) return send(res, 403, 'text/plain', 'Origin not allowed');
+  if (!production) {
+    const allowedHosts = new Set([`127.0.0.1:${port}`, `localhost:${port}`]);
+    const allowedOrigins = new Set(['null', `http://127.0.0.1:${port}`, `http://localhost:${port}`]);
+    if (!allowedHosts.has(req.headers.host)) return send(res, 403, 'text/plain', 'Invalid host');
+    if (req.headers.origin && !allowedOrigins.has(req.headers.origin)) return send(res, 403, 'text/plain', 'Origin not allowed');
+  } else if (req.headers.origin) {
+    const forwardedProto = String(req.headers['x-forwarded-proto'] || 'https').split(',')[0].trim();
+    const host = String(req.headers.host || '');
+    if (!['http', 'https'].includes(forwardedProto) || req.headers.origin !== `${forwardedProto}://${host}`)
+      return send(res, 403, 'text/plain', 'Origin not allowed');
+  }
   if (req.headers.origin) {
     res.setHeader('Access-Control-Allow-Origin', req.headers.origin);
     res.setHeader('Vary', 'Origin');
@@ -83,6 +92,6 @@ const server = http.createServer(async (req, res) => {
   send(res, 404, 'text/plain; charset=utf-8', 'Not found');
 });
 
-server.listen(port, '127.0.0.1', () => {
-  console.log(`Cube Lab running at http://127.0.0.1:${port}`);
+server.listen(port, listenHost, () => {
+  console.log(`Cube Lab listening at ${listenHost}:${port}`);
 });
