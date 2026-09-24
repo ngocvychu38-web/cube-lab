@@ -14,7 +14,7 @@
       const onAbort=()=>timeout.abort();signal.addEventListener('abort',onAbort,{once:true});
       const timer=setTimeout(()=>{timedOut=true;timeout.abort();},60000);
       try{
-        const response=await (api.fetch||fetch)(config.transport,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+config.apiKey},
+        const response=await (api.fetch||fetch)(config.transport,{method:'POST',headers:{'Content-Type':'application/json','X-Jev-API-Key':config.apiKey},
           body:JSON.stringify(payload),signal:timeout.signal});
         const text=await response.text();
         let body;try{body=JSON.parse(text);}catch{if(response.ok)throw new Error('Jev 响应不是 JSON');}

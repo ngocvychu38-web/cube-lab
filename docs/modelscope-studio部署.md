@@ -6,8 +6,11 @@
 - 项目类型：Node.js Web 应用，包含静态 3D 页面和 Jev API 同源代理；应使用 Docker Studio，静态站点类型无法运行代理服务。
 - 已添加 `Dockerfile`，使用 Node 22 Alpine、Node 内置模块、`0.0.0.0:7860` 和 `/health` 健康检查。
 - 本地开发仍使用 `127.0.0.1:8787`，生产服务按请求的同源 Origin 校验平台转发请求。
-- 创建 ModelScope Studio 前需要 `MODELSCOPE_API_KEY`，以及完成 ModelScope 账号实名认证和阿里云账号绑定（Docker Studio 平台要求）。当前尚未发现本机 ModelScope 凭据，尚未创建或发布 Studio。
-- 新 Studio 默认按 Skill 建议为私有；发布后可再决定是否公开。
+- Studio：<https://modelscope.cn/studios/monkeyqiu/3dcube>，所有者 `monkeyqiu`，SDK 类型 Docker，可见性公开。
+- 免费规格：`platform/2v-cpu-8g-mem`。
+- 部署状态：2026-09-24 检查时，Studio/runtime 为 `Running`；Docker build 日志成功，公开 `/health` 返回 `200`。
+- ModelScope 账号 API Key 在本机 `.env.modelscope` 验证通过；Studio 创建 API 被平台要求改用官网操作，因此用户从官网建好 Studio 并上传文件。
+- 曾因客户端把 Jev Key 放在 `Authorization` 头而收到 ModelScope 403。ModelScope 把它作为平台 SDK Token 处理。已将前端到代理的头改为 `X-Jev-API-Key`，仅 Node 转发到 Jev 时转换为 Bearer Authorization；该修复需同步并重新部署后生效。
 
 ## 部署前准备
 
@@ -24,7 +27,7 @@
 
 ## Skill 工作流
 
-凭据可用后，先通过 `GET /openapi/v1/users/me` 验证身份，再查询 Docker 硬件可用项和 Studio 是否已存在。若新建，选择免费硬件并按用户选择的可见性创建 `cube-lab`；若硬件列表只提供付费规格，先停止并说明费用，取得明确授权前不选用。
+Studio 已经创建。后续同步修改时先检查硬件及 Studio 现状；如果硬件列表只提供付费规格，先停止并说明费用，取得明确授权前不选用。
 
 同步代码至 Studio 的 Git 仓库 `master` 分支（不强推），再调用部署接口，读取运行日志直至状态为 `Running`。部署 URL 以 ModelScope 返回的 Studio 信息为准。生产镜像只打包网页运行必需的文件，不打包文档目录和 `.env` 文件。
 

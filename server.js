@@ -30,12 +30,13 @@ const server = http.createServer(async (req, res) => {
   }
   if (req.method === 'OPTIONS' && req.url === '/api/jev') {
     res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Authorization, Content-Type');
+    res.setHeader('Access-Control-Allow-Headers', 'X-Jev-API-Key, Content-Type');
     res.setHeader('Access-Control-Allow-Private-Network', 'true');
     res.writeHead(204);res.end();return;
   }
   if (req.method === 'POST' && req.url === '/api/jev') {
-    if (!/^Bearer \S+$/.test(req.headers.authorization || '')) return send(res, 401, 'application/json', JSON.stringify({error:{message:'缺少 API Key'}}));
+    const jevApiKey = req.headers['x-jev-api-key'];
+    if (typeof jevApiKey !== 'string' || !/^\S+$/.test(jevApiKey)) return send(res, 401, 'application/json', JSON.stringify({error:{message:'缺少 API Key'}}));
     let raw = '', bytes = 0, oversized = false;
     req.setEncoding('utf8');
     req.on('data', chunk => {
@@ -56,7 +57,7 @@ const server = http.createServer(async (req, res) => {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': req.headers.authorization || ''
+            'Authorization': 'Bearer ' + jevApiKey
           },
           body: raw,
           signal: aborter.signal

@@ -21,7 +21,7 @@
 ```http
 POST http://127.0.0.1:8787/api/jev
 Content-Type: application/json
-Authorization: Bearer <用户自己填写的API_KEY>
+X-Jev-API-Key: <用户自己填写的API_KEY>
 ```
 
 上游：`POST https://api.typesafe.ai/v1/systemone`。请求体顶层为：
@@ -36,7 +36,7 @@ Authorization: Bearer <用户自己填写的API_KEY>
 }
 ```
 
-Key 放在请求头，不放进上下文、示例文件或源码。`state` 中包含完整规则、阶段、版本、进度、贴纸、最近方案和候选。
+Key 由浏览器通过 `X-Jev-API-Key` 头发给本项目代理；代理只在发往 Jev 时转换为 `Authorization: Bearer ...`。这样避免 ModelScope Studio 将入站 `Authorization` 误判为平台 SDK Token。Key 不放进上下文、示例文件或源码。`state` 中包含完整规则、阶段、版本、进度、贴纸、最近方案和候选。
 
 ## 2. 示例一：底层十字从 3/4 到 4/4
 
@@ -164,6 +164,6 @@ Key 放在请求头，不放进上下文、示例文件或源码。`state` 中�
 
 ## 6. 如何看真实调用结果
 
-当前左侧日志保存候选、选中的 ID、置信度及实际动作，可导出 JSON；它不保存完整的原始 HTTP 请求与响应。需要核对真实接口报文时，可在浏览器开发者工具 Network 中查看 `/api/jev` 的 Payload 和 Response。分享记录时去除 Authorization 请求头和其他个人信息。
+当前左侧日志保存候选、选中的 ID、置信度及实际动作，可导出 JSON；它不保存完整的原始 HTTP 请求与响应。需要核对真实接口报文时，可在浏览器开发者工具 Network 中查看 `/api/jev` 的 Payload 和 Response。分享记录时去除 `X-Jev-API-Key` 请求头和其他个人信息。
 
 本文示例完整说明协议格式与执行含义；真实 Jev 输出应以实际调用返回为准。
