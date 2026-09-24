@@ -6,7 +6,7 @@
 
 运行 `node server.js`，打开 <http://127.0.0.1:8787/>。需要 Node.js 18 或更新版本。
 
-项目也提供 ModelScope Docker Studio 配置：容器监听 `0.0.0.0:7860`，使用 Node.js 内置模块，无需 npm 安装。部署前需在 ModelScope 完成阿里云账号绑定及实名认证，并准备 `MODELSCOPE_API_KEY`。具体部署说明见 [ModelScope Studio 部署记录](docs/modelscope-studio部署.md)。
+项目提供两种线上部署方式：Netlify 通过静态资源和 Function 同源运行 Jev 代理（推荐，见 [Netlify 部署说明](docs/Netlify部署.md)）；ModelScope Docker Studio 使用独立 Node 服务，容器监听 `0.0.0.0:7860`，见 [ModelScope Studio 部署记录](docs/modelscope-studio部署.md)。
 
 层转动使用SpaceJoe的真实魔方转动录音（CC0），已剪裁首尾静音并按90° / 180°动画制作播放片段，保留录音的音高与塑料摩擦、卡位声，不叠加合成噪声。素材保存于 `assets/audio/`，来源与加工说明见 `assets/audio/CREDITS.md`。手动、撤销和Jev操作共用音效。右上角「试听魔方声」可直接试听而不改变状态，「音效：开 / 关」可静音，偏好自动保存在本地。首次点击或按键后解锁浏览器音频，隐藏页面自动静音。不支持Web Audio的浏览器仍可正常操作魔方。实际打乱也同步播放层转动音效；拖动观察视角不播放。请使用本地HTTP服务加载音频；服务启动后，播放不依赖外部素材网站。
 
