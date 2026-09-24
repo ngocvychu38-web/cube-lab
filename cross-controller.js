@@ -14,7 +14,9 @@
       const onAbort=()=>timeout.abort();signal.addEventListener('abort',onAbort,{once:true});
       const timer=setTimeout(()=>{timedOut=true;timeout.abort();},60000);
       try{
-        const response=await (api.fetch||fetch)(config.transport,{method:'POST',headers:{'Content-Type':'application/json','X-Jev-API-Key':config.apiKey},
+        const headers={'Content-Type':'application/json','X-Jev-API-Key':config.apiKey};
+        if(config.modelScopeToken)headers['X-ModelScope-Token']=config.modelScopeToken;
+        const response=await (api.fetch||fetch)(config.transport,{method:'POST',headers,
           body:JSON.stringify(payload),signal:timeout.signal});
         const text=await response.text();
         let body;try{body=JSON.parse(text);}catch{if(response.ok)throw new Error('Jev 响应不是 JSON');}
@@ -28,7 +30,7 @@
       }catch(e){
         if(signal.aborted){e.name='AbortError';throw e;}
         if(timedOut)throw new Error('Jev 请求超过60秒，已暂停；可以重试');
-        if(e instanceof TypeError)throw new Error('无法连接本地服务，请通过 http://127.0.0.1:8787/ 打开游戏并确认服务已启动');
+        if(e instanceof TypeError)throw new Error('无法连接 AI 代理，请检查代理地址、网络和 CORS 设置');
         throw e;
       }finally{clearTimeout(timer);signal.removeEventListener('abort',onAbort);}
     }
@@ -100,7 +102,8 @@
       }catch(e){
         const stopped=e.name==='AbortError';
         // Never persist credentials even if a remote error happens to echo them.
-        const message=config.apiKey?String(e.message).split(config.apiKey).join('[隐藏]'):String(e.message);
+        let message=String(e.message);
+        for(const secret of [config.apiKey,config.modelScopeToken])if(secret)message=message.split(secret).join('[隐藏]');
         log(stopped?'已停止；'+(stage.number>1?'已停在完整公式边界，前置阶段保留':'当前完整转动已保留')+'，下次从实际状态重新规划':'已暂停：'+message,{type:stopped?'stopped':'error',error:!stopped,finalState:api.snapshot()});
         update({phase:stopped?'stopped':'error',error:stopped?'':message,progress:P.status(api.snapshot())});
         return {status:stopped?'stopped':'error'};

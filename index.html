@@ -24,7 +24,7 @@
 <section class="card"><div class="cardhead"><div class="cardtitle">✳　随机打乱</div><div class="cardmeta" id="scrambleLen">20 MOVES</div></div><div class="scramble empty" id="scramble">生成一组随机公式，开始挑战。</div><div class="bottomrow"><button class="micro" id="copyScramble">复制公式</button><button class="micro" id="newScramble">↻　重新打乱</button></div></section>
 <section class="card"><div class="cardhead"><div class="cardtitle">⌘　转动控制</div><div class="cardmeta">键盘快捷键</div></div><div class="controls" id="controls"></div><div class="bottomrow"><button class="micro" id="undoBtn">↶　撤销上一步</button><button class="micro" id="resetBtn">⟳　复原魔方</button></div></section>
 <section class="card"><div class="cardhead"><div class="cardtitle">☷　转动记录</div><button class="micro" id="clearHistory">清空</button></div><div class="history" id="history"><div class="emptyhist">转动后会显示在这里</div></div></section></aside></section>
-<footer class="foot"><span>DRAG TO ORBIT　·　CLICK OR USE KEYS TO TURN</span><span class="kbd">R L U D F B　/　Shift + 字母 = 逆时针</span></footer></main><dialog id="aiDialog"><form method="dialog" class="ai-modal"><div class="cardhead"><div><div class="cardtitle">✦　底层十字 · AI 设置</div><div class="cardmeta">参数保存在此浏览器本地</div></div><button class="micro" value="close" formnovalidate aria-label="关闭">✕</button></div><label>API 地址<input id="aiEndpoint" type="url" readonly required></label><label>模型名称<input id="aiModel" type="text" placeholder="模型名称" required></label><label>API Key<input id="aiKey" type="password" placeholder="粘贴你的 API Key" autocomplete="off" required></label><label>操作目标<select id="aiGoal"><option value="cross">第1步：底层十字（完成后停止）</option></select></label><div class="ai-actions"><button class="secondary" id="aiSave" type="button">保存设置</button><button class="primary" id="aiRun" type="button">开始 AI 操作</button></div><div class="ai-loghead">操作过程 <button class="micro" id="aiClearLog" type="button">清空</button></div><div id="aiLog" class="ai-log" aria-live="polite"><div class="emptyhist">AI 请求、回复和每一步转动会记录在这里。</div></div></form></dialog><div class="toast" id="toast"></div>
+<footer class="foot"><span>DRAG TO ORBIT　·　CLICK OR USE KEYS TO TURN</span><span class="kbd">R L U D F B　/　Shift + 字母 = 逆时针</span></footer></main><dialog id="aiDialog"><form method="dialog" class="ai-modal"><div class="cardhead"><div><div class="cardtitle">✦　底层十字 · AI 设置</div><div class="cardmeta">参数保存在此浏览器本地</div></div><button class="micro" value="close" formnovalidate aria-label="关闭">✕</button></div><label>Jev API 地址<input id="aiEndpoint" type="url" readonly required></label><label>代理服务地址（部署 Worker 后填写）<input id="aiProxy" type="url" placeholder="https://你的Worker.workers.dev" autocomplete="url"><small>用于跨域转发 ModelScope Token 与 Jev 请求；部署步骤见项目文档。</small></label><label>ModelScope Token（临时验证）<input id="aiModelScopeToken" type="password" placeholder="仅临时验证时填写" autocomplete="off"><small>只保存在当前浏览器本地；会通过 Worker 用于 Studio API 鉴权。验证结束后请清除此项。</small></label><label>模型名称<input id="aiModel" type="text" placeholder="模型名称" required></label><label>Jev API Key<input id="aiKey" type="password" placeholder="粘贴你的 Jev API Key" autocomplete="off" required></label><label>操作目标<select id="aiGoal"><option value="cross">第1步：底层十字（完成后停止）</option></select></label><div class="ai-actions"><button class="secondary" id="aiSave" type="button">保存设置</button><button class="primary" id="aiRun" type="button">开始 AI 操作</button></div><div class="ai-loghead">操作过程 <button class="micro" id="aiClearLog" type="button">清空</button></div><div id="aiLog" class="ai-log" aria-live="polite"><div class="emptyhist">AI 请求、回复和每一步转动会记录在这里。</div></div></form></dialog><div class="toast" id="toast"></div>
 <script src="cross-planner.js"></script>
 <script src="corner-planner.js"></script>
 <script src="layer-planners.js"></script>
@@ -252,18 +252,20 @@ function renderSevenProgress(){
     p.wholeCube.faces.forEach(face=>{const row=document.createElement('div');row.textContent=(face.complete?'✓ ':'○ ')+face.name+' '+face.count+'/9';row.style.color=face.complete?'#b6f36a':'#d7e0eb';progressPanel.append(row);});
   }
 }
-function jevTransport(){return location.protocol==='file:'?'http://127.0.0.1:8787/api/jev':'/api/jev';}
+function jevTransport(){const custom=document.querySelector('#aiProxy').value.trim();if(custom){const base=new URL(custom);if(base.protocol!=='https:')throw new Error('代理服务地址必须使用 HTTPS');return base.href.replace(/\/$/,'')+'/api/jev';}return location.protocol==='file:'?'http://127.0.0.1:8787/api/jev':'/api/jev';}
 const aiDialog=document.querySelector('#aiDialog'), aiLog=document.querySelector('#aiLog'),aiLiveLog=document.querySelector('#aiLiveLog'),aiConfigKey='cubeLab.aiConfig.v1',aiLogKey='cubeLab.aiLog.v1';let aiBusy=false;
 document.querySelector('#aiDialog .cardtitle').textContent='✦ 分层复原 · AI 设置';
 document.querySelector('#aiGoal').innerHTML=stageOrder.map((goal,i)=>'<option value="'+goal+'">第'+(i+1)+'步：'+stageNames[goal]+'（完成后停止）</option>').join('');
 function loadAIConfig(){
   document.querySelector('#aiEndpoint').value='https://api.typesafe.ai/v1/systemone';
   document.querySelector('#aiModel').value='jev-latest';
-  try{const c=JSON.parse(localStorage.getItem(aiConfigKey)||'{}');if(c.model)document.querySelector('#aiModel').value=c.model;if(c.apiKey)document.querySelector('#aiKey').value=c.apiKey;}catch{}
+  try{const c=JSON.parse(localStorage.getItem(aiConfigKey)||'{}');if(c.model)document.querySelector('#aiModel').value=c.model;if(c.apiKey)document.querySelector('#aiKey').value=c.apiKey;if(c.proxyUrl)document.querySelector('#aiProxy').value=c.proxyUrl;if(c.modelScopeToken)document.querySelector('#aiModelScopeToken').value=c.modelScopeToken;}catch{}
   document.querySelector('#aiGoal').value=selectedGoal;
 }
 function saveAIConfig(){
-  const c={endpoint:'https://api.typesafe.ai/v1/systemone',model:document.querySelector('#aiModel').value.trim()||'jev-latest',apiKey:document.querySelector('#aiKey').value.trim(),goal:selectedGoal};
+  let proxyUrl=document.querySelector('#aiProxy').value.trim();try{if(proxyUrl){const parsed=new URL(proxyUrl);if(parsed.protocol!=='https:'||parsed.pathname!=='/'||parsed.search||parsed.hash)throw new Error();proxyUrl=parsed.origin;}}catch{return notify('代理地址请填写 HTTPS Worker 根地址，例如 https://cube-proxy.example.workers.dev');}
+  const modelScopeToken=document.querySelector('#aiModelScopeToken').value.trim();if(modelScopeToken&&!proxyUrl)return notify('填写 ModelScope Token 临时验证时，必须同时填写已部署的 Cloudflare Worker 地址');
+  const c={endpoint:'https://api.typesafe.ai/v1/systemone',model:document.querySelector('#aiModel').value.trim()||'jev-latest',apiKey:document.querySelector('#aiKey').value.trim(),proxyUrl,modelScopeToken,goal:selectedGoal};
   try{localStorage.setItem(aiConfigKey,JSON.stringify(c));notify('AI 设置已保存');if(aiDialog.open)aiDialog.close();return true;}
   catch{notify('浏览器无法保存设置，请允许本地存储');return false;}
 }
@@ -353,7 +355,7 @@ async function runAI(){
   if(!document.querySelector('#aiKey').value.trim()&&!planners[selectedGoal].status(serializeCube()).complete){if(!aiDialog.open)aiDialog.show();notify('请先填写 API Key');return;}
   if(!saveAIConfig())return;
   renderCrossUI({error:'',candidates:[],activePlan:null,step:0,total:0});
-  await controllers[selectedGoal].start({model:document.querySelector('#aiModel').value.trim()||'jev-latest',apiKey:document.querySelector('#aiKey').value.trim(),transport:jevTransport()});
+  await controllers[selectedGoal].start({model:document.querySelector('#aiModel').value.trim()||'jev-latest',apiKey:document.querySelector('#aiKey').value.trim(),modelScopeToken:document.querySelector('#aiModelScopeToken').value.trim(),transport:jevTransport()});
   if(planners[selectedGoal].status(serializeCube()).complete){const next=stageOrder[stageNumber(selectedGoal)];if(next){const finished=stageNames[selectedGoal];selectGoal(next);notify(finished+'完成，可以开始第'+stageNumber(next)+'步'+stageNames[next]);}}
 }
 document.querySelector('#crossStart').onclick=runAI;
@@ -364,7 +366,7 @@ async function runAllAI(){
   if(planners.topEdges.status(serializeCube()).complete){notify('魔方已经复原，无需调用 Jev');renderCrossUI({phase:'complete'});return;}
   if(!document.querySelector('#aiKey').value.trim()){if(!aiDialog.open)aiDialog.show();notify('请先填写 API Key，再点击一键完成七步');return;}
   if(!saveAIConfig())return;
-  const config={model:document.querySelector('#aiModel').value.trim()||'jev-latest',apiKey:document.querySelector('#aiKey').value.trim(),transport:jevTransport(),continuous:true};
+  const config={model:document.querySelector('#aiModel').value.trim()||'jev-latest',apiKey:document.querySelector('#aiKey').value.trim(),modelScopeToken:document.querySelector('#aiModelScopeToken').value.trim(),transport:jevTransport(),continuous:true};
   allRun=true;allStopRequested=false;controllerAPI.lock(true);
   renderCrossUI({phase:'idle',error:'',candidates:[],activePlan:null,step:0,total:0});
   addAILog('一键复原开始：从当前状态连续完成七步，已完成阶段自动跳过',{type:'all-start',initialState:serializeCube()});
@@ -389,7 +391,7 @@ async function runAllAI(){
     addAILog('一键七步全部完成：六面贴纸54/54，整个魔方已复原',{type:'all-complete',finalState:serializeCube(),wholeCube:finalProgress.wholeCube});
     renderCrossUI({phase:'complete'});notify('七步完成，魔方已复原！');
   }catch(error){
-    const message=String(error.message).split(config.apiKey).join('[隐藏]');
+    let message=String(error.message);for(const secret of [config.apiKey,config.modelScopeToken])if(secret)message=message.split(secret).join('[隐藏]');
     addAILog('一键复原已暂停：'+message,{type:'all-error',error:true});renderCrossUI({phase:'error',error:message});
   }finally{allRun=false;allStopRequested=false;controllerAPI.lock(false);renderCrossUI({running:false});persistCube();}
 }
