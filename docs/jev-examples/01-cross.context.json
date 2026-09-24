@@ -1,0 +1,877 @@
+{
+  "rules": "只执行七步法第1步：底层十字。底面D=黄、顶面U=白、F=绿、R=红、B=蓝、L=橙。\n标准Singmaster记号：字母为正对该面的顺时针90°，撇号为逆时针90°，2为180°；拖动视角不改变面定义。\n完成需DF、DR、DB、DL四个底棱均位置正确，黄色朝D，另一色贴纸对齐对应侧面中心。仅底部看似十字不算完成。\n候选方案根据当前真实状态搜索，已逐步模拟；每个方案结束后至少多完成一个底棱，并恢复所有先前完成底棱。\n完整方案途中允许临时打破十字；执行时不换计划，方案结束后才重新规划。角块和其他棱块在第1步不要求复原。\n只选择候选方案ID。优先完成更多底棱，其次用更少转动；不倒放打乱记录、不自行生成转动，不开始第2步。\nPAUSE表示暂停，不能用来宣称复原。程序独立核对完成条件，置信度不等于完成证明。",
+  "stage": {
+    "number": 1,
+    "name": "底层十字"
+  },
+  "revision": 1,
+  "coordinates": "x向右，y向上，z向前；position和normal是整数坐标",
+  "progress": {
+    "edges": [
+      {
+        "id": "DF",
+        "face": "F",
+        "name": "黄绿棱块",
+        "position": [
+          -1,
+          0,
+          1
+        ],
+        "targetPosition": [
+          0,
+          -1,
+          1
+        ],
+        "yellowNormal": [
+          -1,
+          0,
+          0
+        ],
+        "sideNormal": [
+          0,
+          0,
+          1
+        ],
+        "positionCorrect": false,
+        "yellowDown": false,
+        "sideAligned": true,
+        "solved": false
+      },
+      {
+        "id": "DR",
+        "face": "R",
+        "name": "黄红棱块",
+        "position": [
+          1,
+          -1,
+          0
+        ],
+        "targetPosition": [
+          1,
+          -1,
+          0
+        ],
+        "yellowNormal": [
+          0,
+          -1,
+          0
+        ],
+        "sideNormal": [
+          1,
+          0,
+          0
+        ],
+        "positionCorrect": true,
+        "yellowDown": true,
+        "sideAligned": true,
+        "solved": true
+      },
+      {
+        "id": "DB",
+        "face": "B",
+        "name": "黄蓝棱块",
+        "position": [
+          0,
+          -1,
+          -1
+        ],
+        "targetPosition": [
+          0,
+          -1,
+          -1
+        ],
+        "yellowNormal": [
+          0,
+          -1,
+          0
+        ],
+        "sideNormal": [
+          0,
+          0,
+          -1
+        ],
+        "positionCorrect": true,
+        "yellowDown": true,
+        "sideAligned": true,
+        "solved": true
+      },
+      {
+        "id": "DL",
+        "face": "L",
+        "name": "黄橙棱块",
+        "position": [
+          -1,
+          -1,
+          0
+        ],
+        "targetPosition": [
+          -1,
+          -1,
+          0
+        ],
+        "yellowNormal": [
+          0,
+          -1,
+          0
+        ],
+        "sideNormal": [
+          -1,
+          0,
+          0
+        ],
+        "positionCorrect": true,
+        "yellowDown": true,
+        "sideAligned": true,
+        "solved": true
+      }
+    ],
+    "count": 3,
+    "complete": false
+  },
+  "cube": [
+    {
+      "position": [
+        -1,
+        -1,
+        -1
+      ],
+      "stickers": [
+        {
+          "homeFace": "D",
+          "color": "黄",
+          "normal": [
+            0,
+            -1,
+            0
+          ]
+        },
+        {
+          "homeFace": "L",
+          "color": "橙",
+          "normal": [
+            -1,
+            0,
+            0
+          ]
+        },
+        {
+          "homeFace": "B",
+          "color": "蓝",
+          "normal": [
+            0,
+            0,
+            -1
+          ]
+        }
+      ]
+    },
+    {
+      "position": [
+        -1,
+        -1,
+        0
+      ],
+      "stickers": [
+        {
+          "homeFace": "D",
+          "color": "黄",
+          "normal": [
+            0,
+            -1,
+            0
+          ]
+        },
+        {
+          "homeFace": "L",
+          "color": "橙",
+          "normal": [
+            -1,
+            0,
+            0
+          ]
+        }
+      ]
+    },
+    {
+      "position": [
+        -1,
+        1,
+        1
+      ],
+      "stickers": [
+        {
+          "homeFace": "D",
+          "color": "黄",
+          "normal": [
+            -1,
+            0,
+            0
+          ]
+        },
+        {
+          "homeFace": "L",
+          "color": "橙",
+          "normal": [
+            0,
+            1,
+            0
+          ]
+        },
+        {
+          "homeFace": "F",
+          "color": "绿",
+          "normal": [
+            0,
+            0,
+            1
+          ]
+        }
+      ]
+    },
+    {
+      "position": [
+        -1,
+        0,
+        -1
+      ],
+      "stickers": [
+        {
+          "homeFace": "L",
+          "color": "橙",
+          "normal": [
+            -1,
+            0,
+            0
+          ]
+        },
+        {
+          "homeFace": "B",
+          "color": "蓝",
+          "normal": [
+            0,
+            0,
+            -1
+          ]
+        }
+      ]
+    },
+    {
+      "position": [
+        -1,
+        0,
+        0
+      ],
+      "stickers": [
+        {
+          "homeFace": "L",
+          "color": "橙",
+          "normal": [
+            -1,
+            0,
+            0
+          ]
+        }
+      ]
+    },
+    {
+      "position": [
+        0,
+        1,
+        1
+      ],
+      "stickers": [
+        {
+          "homeFace": "L",
+          "color": "橙",
+          "normal": [
+            0,
+            1,
+            0
+          ]
+        },
+        {
+          "homeFace": "F",
+          "color": "绿",
+          "normal": [
+            0,
+            0,
+            1
+          ]
+        }
+      ]
+    },
+    {
+      "position": [
+        -1,
+        1,
+        -1
+      ],
+      "stickers": [
+        {
+          "homeFace": "U",
+          "color": "白",
+          "normal": [
+            0,
+            1,
+            0
+          ]
+        },
+        {
+          "homeFace": "L",
+          "color": "橙",
+          "normal": [
+            -1,
+            0,
+            0
+          ]
+        },
+        {
+          "homeFace": "B",
+          "color": "蓝",
+          "normal": [
+            0,
+            0,
+            -1
+          ]
+        }
+      ]
+    },
+    {
+      "position": [
+        -1,
+        1,
+        0
+      ],
+      "stickers": [
+        {
+          "homeFace": "U",
+          "color": "白",
+          "normal": [
+            0,
+            1,
+            0
+          ]
+        },
+        {
+          "homeFace": "L",
+          "color": "橙",
+          "normal": [
+            -1,
+            0,
+            0
+          ]
+        }
+      ]
+    },
+    {
+      "position": [
+        1,
+        1,
+        1
+      ],
+      "stickers": [
+        {
+          "homeFace": "U",
+          "color": "白",
+          "normal": [
+            1,
+            0,
+            0
+          ]
+        },
+        {
+          "homeFace": "L",
+          "color": "橙",
+          "normal": [
+            0,
+            1,
+            0
+          ]
+        },
+        {
+          "homeFace": "F",
+          "color": "绿",
+          "normal": [
+            0,
+            0,
+            1
+          ]
+        }
+      ]
+    },
+    {
+      "position": [
+        0,
+        -1,
+        -1
+      ],
+      "stickers": [
+        {
+          "homeFace": "D",
+          "color": "黄",
+          "normal": [
+            0,
+            -1,
+            0
+          ]
+        },
+        {
+          "homeFace": "B",
+          "color": "蓝",
+          "normal": [
+            0,
+            0,
+            -1
+          ]
+        }
+      ]
+    },
+    {
+      "position": [
+        0,
+        -1,
+        0
+      ],
+      "stickers": [
+        {
+          "homeFace": "D",
+          "color": "黄",
+          "normal": [
+            0,
+            -1,
+            0
+          ]
+        }
+      ]
+    },
+    {
+      "position": [
+        -1,
+        0,
+        1
+      ],
+      "stickers": [
+        {
+          "homeFace": "D",
+          "color": "黄",
+          "normal": [
+            -1,
+            0,
+            0
+          ]
+        },
+        {
+          "homeFace": "F",
+          "color": "绿",
+          "normal": [
+            0,
+            0,
+            1
+          ]
+        }
+      ]
+    },
+    {
+      "position": [
+        0,
+        0,
+        -1
+      ],
+      "stickers": [
+        {
+          "homeFace": "B",
+          "color": "蓝",
+          "normal": [
+            0,
+            0,
+            -1
+          ]
+        }
+      ]
+    },
+    {
+      "position": [
+        0,
+        0,
+        1
+      ],
+      "stickers": [
+        {
+          "homeFace": "F",
+          "color": "绿",
+          "normal": [
+            0,
+            0,
+            1
+          ]
+        }
+      ]
+    },
+    {
+      "position": [
+        0,
+        1,
+        -1
+      ],
+      "stickers": [
+        {
+          "homeFace": "U",
+          "color": "白",
+          "normal": [
+            0,
+            1,
+            0
+          ]
+        },
+        {
+          "homeFace": "B",
+          "color": "蓝",
+          "normal": [
+            0,
+            0,
+            -1
+          ]
+        }
+      ]
+    },
+    {
+      "position": [
+        0,
+        1,
+        0
+      ],
+      "stickers": [
+        {
+          "homeFace": "U",
+          "color": "白",
+          "normal": [
+            0,
+            1,
+            0
+          ]
+        }
+      ]
+    },
+    {
+      "position": [
+        1,
+        0,
+        1
+      ],
+      "stickers": [
+        {
+          "homeFace": "U",
+          "color": "白",
+          "normal": [
+            1,
+            0,
+            0
+          ]
+        },
+        {
+          "homeFace": "F",
+          "color": "绿",
+          "normal": [
+            0,
+            0,
+            1
+          ]
+        }
+      ]
+    },
+    {
+      "position": [
+        1,
+        -1,
+        -1
+      ],
+      "stickers": [
+        {
+          "homeFace": "D",
+          "color": "黄",
+          "normal": [
+            0,
+            -1,
+            0
+          ]
+        },
+        {
+          "homeFace": "R",
+          "color": "红",
+          "normal": [
+            1,
+            0,
+            0
+          ]
+        },
+        {
+          "homeFace": "B",
+          "color": "蓝",
+          "normal": [
+            0,
+            0,
+            -1
+          ]
+        }
+      ]
+    },
+    {
+      "position": [
+        1,
+        -1,
+        0
+      ],
+      "stickers": [
+        {
+          "homeFace": "D",
+          "color": "黄",
+          "normal": [
+            0,
+            -1,
+            0
+          ]
+        },
+        {
+          "homeFace": "R",
+          "color": "红",
+          "normal": [
+            1,
+            0,
+            0
+          ]
+        }
+      ]
+    },
+    {
+      "position": [
+        -1,
+        -1,
+        1
+      ],
+      "stickers": [
+        {
+          "homeFace": "D",
+          "color": "黄",
+          "normal": [
+            -1,
+            0,
+            0
+          ]
+        },
+        {
+          "homeFace": "R",
+          "color": "红",
+          "normal": [
+            0,
+            -1,
+            0
+          ]
+        },
+        {
+          "homeFace": "F",
+          "color": "绿",
+          "normal": [
+            0,
+            0,
+            1
+          ]
+        }
+      ]
+    },
+    {
+      "position": [
+        1,
+        0,
+        -1
+      ],
+      "stickers": [
+        {
+          "homeFace": "R",
+          "color": "红",
+          "normal": [
+            1,
+            0,
+            0
+          ]
+        },
+        {
+          "homeFace": "B",
+          "color": "蓝",
+          "normal": [
+            0,
+            0,
+            -1
+          ]
+        }
+      ]
+    },
+    {
+      "position": [
+        1,
+        0,
+        0
+      ],
+      "stickers": [
+        {
+          "homeFace": "R",
+          "color": "红",
+          "normal": [
+            1,
+            0,
+            0
+          ]
+        }
+      ]
+    },
+    {
+      "position": [
+        0,
+        -1,
+        1
+      ],
+      "stickers": [
+        {
+          "homeFace": "R",
+          "color": "红",
+          "normal": [
+            0,
+            -1,
+            0
+          ]
+        },
+        {
+          "homeFace": "F",
+          "color": "绿",
+          "normal": [
+            0,
+            0,
+            1
+          ]
+        }
+      ]
+    },
+    {
+      "position": [
+        1,
+        1,
+        -1
+      ],
+      "stickers": [
+        {
+          "homeFace": "U",
+          "color": "白",
+          "normal": [
+            0,
+            1,
+            0
+          ]
+        },
+        {
+          "homeFace": "R",
+          "color": "红",
+          "normal": [
+            1,
+            0,
+            0
+          ]
+        },
+        {
+          "homeFace": "B",
+          "color": "蓝",
+          "normal": [
+            0,
+            0,
+            -1
+          ]
+        }
+      ]
+    },
+    {
+      "position": [
+        1,
+        1,
+        0
+      ],
+      "stickers": [
+        {
+          "homeFace": "U",
+          "color": "白",
+          "normal": [
+            0,
+            1,
+            0
+          ]
+        },
+        {
+          "homeFace": "R",
+          "color": "红",
+          "normal": [
+            1,
+            0,
+            0
+          ]
+        }
+      ]
+    },
+    {
+      "position": [
+        1,
+        -1,
+        1
+      ],
+      "stickers": [
+        {
+          "homeFace": "U",
+          "color": "白",
+          "normal": [
+            1,
+            0,
+            0
+          ]
+        },
+        {
+          "homeFace": "R",
+          "color": "红",
+          "normal": [
+            0,
+            -1,
+            0
+          ]
+        },
+        {
+          "homeFace": "F",
+          "color": "绿",
+          "normal": [
+            0,
+            0,
+            1
+          ]
+        }
+      ]
+    }
+  ],
+  "recentPlans": [],
+  "candidates": [
+    {
+      "id": "plan_1",
+      "targetId": "DF",
+      "target": "黄绿棱块",
+      "moves": [
+        "F'"
+      ],
+      "beforeCount": 3,
+      "afterCount": 4,
+      "protected": [
+        "DR",
+        "DB",
+        "DL"
+      ],
+      "completed": [
+        "DF",
+        "DR",
+        "DB",
+        "DL"
+      ]
+    }
+  ]
+}

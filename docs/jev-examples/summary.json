@@ -1,0 +1,77 @@
+[
+  {
+    "name": "01-cross",
+    "setup": [
+      "F"
+    ],
+    "stage": {
+      "number": 1,
+      "name": "底层十字"
+    },
+    "beforeCount": 3,
+    "selected": "plan_1",
+    "moves": [
+      "F'"
+    ],
+    "afterCount": 4,
+    "candidateCount": 1
+  },
+  {
+    "name": "02-corners",
+    "setup": [
+      "R",
+      "U'",
+      "R'"
+    ],
+    "stage": {
+      "number": 2,
+      "name": "底层一面"
+    },
+    "beforeCount": 3,
+    "selected": "corner_plan_1",
+    "moves": [
+      "R",
+      "U",
+      "R'"
+    ],
+    "afterCount": 4,
+    "candidateCount": 1
+  },
+  {
+    "name": "03-top-edges",
+    "setup": [
+      "R2",
+      "U",
+      "R",
+      "U",
+      "R'",
+      "U'",
+      "R'",
+      "U'",
+      "R'",
+      "U",
+      "R'"
+    ],
+    "stage": {
+      "number": 7,
+      "name": "顶层棱块归位"
+    },
+    "beforeCount": 1,
+    "selected": "permutation_plan_1",
+    "moves": [
+      "R",
+      "U'",
+      "R",
+      "U",
+      "R",
+      "U",
+      "R",
+      "U'",
+      "R'",
+      "U'",
+      "R2"
+    ],
+    "afterCount": 4,
+    "candidateCount": 1
+  }
+]

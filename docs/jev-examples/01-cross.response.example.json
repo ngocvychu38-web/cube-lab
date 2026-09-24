@@ -1,0 +1,10 @@
+{
+  "model": "jev-latest",
+  "answers": {
+    "plan": {
+      "type": "choice",
+      "choice": "plan_1",
+      "confidence": 0.9
+    }
+  }
+}
