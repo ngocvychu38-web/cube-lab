@@ -14,10 +14,12 @@
       const onAbort=()=>timeout.abort();signal.addEventListener('abort',onAbort,{once:true});
       const timer=setTimeout(()=>{timedOut=true;timeout.abort();},60000);
       try{
-        const headers={'Content-Type':'application/json','X-Jev-API-Key':config.apiKey};
+        const headers={'Content-Type':'application/json'};
+        if(config.provider==='deepseek')headers['X-DeepSeek-API-Key']=config.apiKey;
+        else headers['X-Jev-API-Key']=config.apiKey;
         if(config.modelScopeToken)headers['X-ModelScope-Token']=config.modelScopeToken;
         const response=await (api.fetch||fetch)(config.transport,{method:'POST',headers,
-          body:JSON.stringify(payload),signal:timeout.signal});
+          body:JSON.stringify(config.provider==='deepseek'?{provider:'deepseek',payload}:payload),signal:timeout.signal});
         const text=await response.text();
         let body;try{body=JSON.parse(text);}catch{if(response.ok)throw new Error('Jev 响应不是 JSON');}
         if(!response.ok){
@@ -55,20 +57,21 @@
           if(!candidates.length)throw new Error('未找到经过验证的候选方案，已暂停');
           if(api.revision()!==revision||P.key(api.snapshot())!==stateKey)throw new Error('当前状态已变化，请重新开始规划');
           update({phase:'deciding',round,baseline:baseline.count,progress:baseline,candidates});
-          log('已验证 '+candidates.length+' 个候选，等待 Jev 选择',{type:'candidates',revision,candidates:candidates.map(({expectedKey,...p})=>p)});
+          log('已验证 '+candidates.length+' 个候选，等待 '+(config.provider==='deepseek'?'DeepSeek Flash':'Jev')+' 选择方案',{type:'candidates',revision,candidates:candidates.map(({expectedKey,...p})=>p)});
           const payload=P.request(snapshot,candidates,{revision,model:config.model,recent});
+          if(config.provider==='deepseek')payload.questions.plan.prompt='你是三阶魔方七步法的候选方案评估器。根据状态、规则和候选方案，只能选择一个最能推进当前阶段且保护已完成阶段的候选ID；不得输出转动公式。只输出 JSON：{"choice":"候选ID","confidence":0到1}；如全部不安全则输出 {"choice":"PAUSE","confidence":0}。\n上下文：'+JSON.stringify(payload);
           const answer=await choose(payload,config,aborter.signal);abortCheck();
-          if(api.revision()!==revision||P.key(api.snapshot())!==stateKey)throw new Error('Jev 回复对应旧状态，未执行，请重新开始');
+          if(api.revision()!==revision||P.key(api.snapshot())!==stateKey)throw new Error((config.provider==='deepseek'?'DeepSeek':'Jev')+' 回复对应旧状态，未执行，请重新开始');
           if(answer.choice==='PAUSE'){
-            log('Jev 选择暂停，'+stage.name+'尚未完成',{type:'paused',answer});
+            log((config.provider==='deepseek'?'DeepSeek Flash':'Jev')+' 选择暂停，'+stage.name+'尚未完成',{type:'paused',answer});
             update({phase:'paused',progress:P.status(api.snapshot())});return {status:'paused'};
           }
           const selected=candidates.find(p=>p.id===answer.choice);
-          if(!selected)throw new Error('Jev 返回了候选之外的方案，已拒绝执行');
+          if(!selected)throw new Error((config.provider==='deepseek'?'DeepSeek':'Jev')+' 返回了候选之外的方案，已拒绝执行');
           let expected=snapshot;
           const predicted=selected.moves.reduce((s,m)=>P.move(s,m),snapshot);
           if(P.key(predicted)!==selected.expectedKey)throw new Error('方案模拟结果不一致，已拒绝执行');
-          log('Jev 选择 '+selected.id+'：'+selected.target+' · '+selected.moves.join(' ')+(answer.confidence!==null?'（置信度 '+(answer.confidence*100).toFixed(1)+'%）':''),{type:'selected',answer,plan:selected.id});
+          log((config.provider==='deepseek'?'DeepSeek Flash':'Jev')+' 选择 '+selected.id+'：'+selected.target+' · '+selected.moves.join(' ')+(answer.confidence!==null?'（置信度 '+(answer.confidence*100).toFixed(1)+'%）':''),{type:'selected',answer,plan:selected.id});
           update({phase:'executing',round,baseline:baseline.count,activePlan:selected,step:0,total:selected.moves.length,confidence:answer.confidence});
           const safeStops=new Set(selected.safeStops||selected.moves.map((_,i)=>i+1));
           for(let i=0;i<selected.moves.length;i++){

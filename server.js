@@ -30,11 +30,23 @@ const server = http.createServer(async (req, res) => {
   }
   if (req.method === 'OPTIONS' && req.url === '/api/jev') {
     res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'X-Jev-API-Key, Content-Type');
+    res.setHeader('Access-Control-Allow-Headers', 'X-Jev-API-Key, X-DeepSeek-API-Key, Content-Type');
     res.setHeader('Access-Control-Allow-Private-Network', 'true');
     res.writeHead(204);res.end();return;
   }
   if (req.method === 'POST' && req.url === '/api/jev') {
+    const deepseekApiKey=req.headers['x-deepseek-api-key'];
+    if(typeof deepseekApiKey==='string'&&/^\S+$/.test(deepseekApiKey)){
+      let raw='';req.setEncoding('utf8');req.on('data',chunk=>{raw+=chunk;if(Buffer.byteLength(raw)>256*1024){send(res,413,'application/json',JSON.stringify({error:{message:'请求过大'}}));req.destroy();}});
+      req.on('end',async()=>{try{
+        const parsed=JSON.parse(raw);if(parsed.provider!=='deepseek'||!parsed.payload)throw new Error('无效 DeepSeek 请求');
+        const upstream=await fetch('https://api.deepseek.com/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+deepseekApiKey},body:JSON.stringify({model:'deepseek-flash',messages:[{role:'system',content:'严格依据上下文候选方案选择一个候选 id 或 PAUSE，只输出 JSON，不得输出转动公式。'},{role:'user',content:JSON.stringify(parsed.payload)}],response_format:{type:'json_object'},temperature:0}),signal:AbortSignal.timeout(55000)});
+        const result=await upstream.json();if(!upstream.ok)return send(res,upstream.status,'application/json',JSON.stringify({error:{message:result.error?.message||'DeepSeek API 请求失败'}}));
+        let choice;try{choice=JSON.parse(result.choices?.[0]?.message?.content||'{}')}catch{return send(res,502,'application/json',JSON.stringify({error:{message:'DeepSeek 未返回有效 JSON'}}));}
+        if(typeof choice.choice!=='string')return send(res,502,'application/json',JSON.stringify({error:{message:'DeepSeek 缺少候选选择'}}));
+        send(res,200,'application/json',JSON.stringify({model:result.model||'deepseek-flash',answers:{plan:{type:'choice',choice:choice.choice,confidence:Number.isFinite(choice.confidence)?choice.confidence:null}}}));
+      }catch(error){if(!res.destroyed)send(res,502,'application/json',JSON.stringify({error:{message:error.message||'无法连接 DeepSeek'}}));}});return;
+    }
     const jevApiKey = req.headers['x-jev-api-key'];
     if (typeof jevApiKey !== 'string' || !/^\S+$/.test(jevApiKey)) return send(res, 401, 'application/json', JSON.stringify({error:{message:'缺少 API Key'}}));
     let raw = '', bytes = 0, oversized = false;

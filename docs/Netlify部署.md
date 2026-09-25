@@ -1,6 +1,6 @@
 # Netlify 部署
 
-本项目由静态 3D 页面和 Jev API 代理组成。Netlify 部署不能只发布 HTML；仓库已配置 Netlify Function 接管 `/api/jev`。
+本项目由静态 3D 页面和 AI API 代理组成。Netlify 部署不能只发布 HTML；仓库已配置 Netlify Function 接管 `/api/jev`，同时支持 Jev 和 DeepSeek Flash。
 
 ## GitHub 仓库
 
@@ -14,10 +14,12 @@
 4. 点击部署。构建脚本只把 HTML、游戏逻辑 JS 和音频复制到 `dist`，避免将 Docker 服务端源码和文档发布到站点 CDN。
 5. 部署成功后打开 `https://<你的站点>.netlify.app/api/jev`。应返回 `{"ok":true,"service":"cube-lab-jev-proxy"}`，确认 API Function 已启动。
 6. 在站点页面 AI 设置中填写 Jev Key，代理服务地址留空，点击 AI 操作。留空时页面同源请求 Netlify Function。
+7. 选择「DeepSeek Flash」并填入 DeepSeek API Key，也通过同一 Function 同源转发；模型名称固定为 `deepseek-flash`。Jev 与 DeepSeek 的 Key 分别保存在用户当前浏览器本地。
 
 ## 代理行为
 
 - 未设置 ModelScope Token：Netlify Function 将 `X-Jev-API-Key` 转为 Jev 上游的 Bearer Authorization，调用 `https://api.typesafe.ai/v1/systemone`。
+- 收到 `X-DeepSeek-API-Key`：Function 调用 `https://api.deepseek.com/chat/completions` 的 `deepseek-flash`，只把模型返回的候选 ID / PAUSE 规范化为执行器协议；魔方动作仍由本地候选验证器筛选和模拟。
 - 临时设置了 ModelScope Token：Function 改调该 Studio 的 `api-inference` 域名，将 ModelScope Token 用于上游 Studio 鉴权，并将 Jev Key 继续放在 `X-Jev-API-Key`。浏览器只访问同源 Netlify URL，不会遇到 API 域的跨域预检。
 - 两种 Key 都不会写入构建产物或日志。网页 AI 设置保存在使用者当前浏览器本地；临时验证后清除 ModelScope Token 并保存。
 
