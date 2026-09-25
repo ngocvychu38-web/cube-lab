@@ -13,8 +13,8 @@
 3. Netlify 会读取仓库根目录的 `netlify.toml`：构建命令为 `node scripts/build-netlify.mjs`，发布目录为 `dist`，Functions 目录为 `netlify/functions`；无需额外填写。
 4. 点击部署。构建脚本只把 HTML、游戏逻辑 JS 和音频复制到 `dist`，避免将 Docker 服务端源码和文档发布到站点 CDN。
 5. 部署成功后打开 `https://<你的站点>.netlify.app/api/jev`。应返回 `{"ok":true,"service":"cube-lab-jev-proxy"}`，确认 API Function 已启动。
-6. 在站点页面 AI 设置中填写 Jev Key，代理服务地址留空，点击 AI 操作。留空时页面同源请求 Netlify Function。
-7. 选择「DeepSeek Flash」并填入 DeepSeek API Key，也通过同一 Function 同源转发；模型名称固定为 `deepseek-flash`。Jev 与 DeepSeek 的 Key 分别保存在用户当前浏览器本地。
+6. 首页打开双模型对战页，左右两边分别是 Jev 与 DeepSeek Flash，各自有独立魔方、分步按钮、日志和计时。点击顶部「同步重新打乱」可让两台魔方使用相同起点。
+7. 分别打开对应魔方的「AI 设置」并填写各自的 API Key。Key 分别保存在当前浏览器本地。DeepSeek 通过同一 Function 同源转发，模型名称固定为 `deepseek-flash`。
 
 ## 代理行为
 

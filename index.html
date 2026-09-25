@@ -16,6 +16,8 @@
 .stage{height:clamp(390px,calc(100vh - 270px),590px);min-height:390px;position:sticky;top:14px}.cross-progress{display:grid;grid-template-columns:1fr 1fr;gap:4px;font-size:11px;line-height:1.6}.cross-progress strong,.cross-progress small{grid-column:1/-1}.cross-status{font-size:11px;line-height:1.5}.cross-options summary{font-size:11px;cursor:pointer;padding:5px 0}.cross-candidates{max-height:155px;overflow:auto}.cube-area .ai-live-log{max-height:180px}.cube-area .ai-live{padding:12px}
 .stage-tabs{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:12px 0}.stage-tabs button{padding:9px 4px;font-size:11px}.stage-tabs button[aria-pressed="true"]{border-color:var(--accent);color:var(--accent);background:#344733}.stage-prerequisite{padding:5px 0;color:#c5d0db}.cross-progress strong{margin-top:4px}
 @media(max-width:600px){.stage{position:relative;top:auto;height:360px;min-height:360px}}
+body.arena .shell{max-width:none;padding:10px}body.arena .topbar,body.arena .hero,body.arena .foot{display:none}body.arena .layout{display:block}body.arena .cube-area{grid-template-columns:minmax(135px,24%) minmax(0,1fr);gap:8px}body.arena .stage{height:350px;min-height:300px;position:relative;top:auto}body.arena .cube-area .ai-live{padding:8px}body.arena .cube-area .ai-live-log{max-height:130px}body.arena .cross-progress{font-size:9px}body.arena .cross-buttons{grid-template-columns:1fr}body.arena .stage-tabs{grid-template-columns:1fr 1fr;margin:5px 0}body.arena .stage-tabs button{font-size:9px;padding:6px 2px}body.arena .sidebar{display:grid;grid-template-columns:1fr 1fr;gap:8px}body.arena .sidebar .card{padding:10px}body.arena .sidebar dialog#aiDialog{grid-column:1/-1}body.arena .timer .time{font-size:28px}body.arena .cardtitle{font-size:10px}body.arena .ai-live-title{font-size:10px}body.arena .cross-status{font-size:9px;padding:6px}body.arena .ai-log{height:85px}body.arena .card:nth-child(2){grid-column:1/-1}
+@media(max-width:560px){body.arena .cube-area{grid-template-columns:1fr}body.arena .stage{height:300px}body.arena .sidebar{grid-template-columns:1fr 1fr}}
 </style></head>
 <body><main class="shell"><header class="topbar"><div class="brand"><div class="brandmark">✣</div><div>Cube Lab<small>PUZZLE PLAYGROUND</small></div></div><div class="top-actions"><button class="ghost" id="undoTop">↶　撤销</button><button class="ghost" id="resetTop">⟳　复原</button><button class="primary" id="aiOpen">✦　AI 操作</button></div></header>
 <section class="hero"><div><div class="eyebrow">CLASSIC 3 × 3 × 3</div><h1>把每一面，转回秩序。</h1><p>随时开始一局，试试你的解谜速度。</p></div><div class="status"><i class="dot"></i><span id="statusText">已就绪 · 开始转动吧</span></div></section>
@@ -24,13 +26,14 @@
 <section class="card"><div class="cardhead"><div class="cardtitle">✳　随机打乱</div><div class="cardmeta" id="scrambleLen">20 MOVES</div></div><div class="scramble empty" id="scramble">生成一组随机公式，开始挑战。</div><div class="bottomrow"><button class="micro" id="copyScramble">复制公式</button><button class="primary scramble-button" id="newScramble">↻　重新打乱</button></div></section>
 <section class="card hidden-panel"><div class="cardhead"><div class="cardtitle">⌘　转动控制</div><div class="cardmeta">键盘快捷键</div></div><div class="controls" id="controls"></div><div class="bottomrow"><button class="micro" id="undoBtn">↶　撤销上一步</button><button class="micro" id="resetBtn">⟳　复原魔方</button></div></section>
 <section class="card hidden-panel"><div class="cardhead"><div class="cardtitle">☷　转动记录</div><button class="micro" id="clearHistory">清空</button></div><div class="history" id="history"><div class="emptyhist">转动后会显示在这里</div></div></section></aside></section>
-<footer class="foot"><span>DRAG TO ORBIT　·　CLICK OR USE KEYS TO TURN</span><span class="kbd">R L U D F B　/　Shift + 字母 = 逆时针</span></footer></main><dialog id="aiDialog"><form method="dialog" class="ai-modal"><div class="cardhead"><div><div class="cardtitle">✦　底层十字 · AI 设置</div><div class="cardmeta">参数保存在此浏览器本地</div></div><button class="micro" value="close" formnovalidate aria-label="关闭">✕</button></div><label class="ai-hidden-setting">Jev API 地址<input id="aiEndpoint" type="url" readonly required></label><label class="ai-hidden-setting">代理服务地址（可选）<input id="aiProxy" type="url" placeholder="留空使用当前站点内置代理" autocomplete="url"><small>Netlify 部署时留空即可；仅使用独立跨域代理时填写。</small></label><label class="ai-hidden-setting">ModelScope Token（临时验证）<input id="aiModelScopeToken" type="password" placeholder="仅临时验证时填写" autocomplete="off"><small>仅保存在当前浏览器本地；由同源代理用于 Studio API 鉴权。验证结束后请清除此项。</small></label><label class="ai-hidden-setting">模型名称<input id="aiModel" type="text" placeholder="模型名称" required></label><label>当前 AI 模型<select id="aiProvider"><option value="jev">Jev</option><option value="deepseek">DeepSeek Flash</option></select></label><label id="jevKeyLabel">Jev API Key<input id="aiKey" type="password" placeholder="粘贴你的 Jev API Key" autocomplete="off"></label><label id="deepseekKeyLabel" hidden>DeepSeek Flash API Key<input id="deepseekKey" type="password" placeholder="粘贴你的 DeepSeek API Key" autocomplete="off"></label><label class="ai-hidden-setting">操作目标<select id="aiGoal"><option value="cross">第1步：底层十字（完成后停止）</option></select></label><div class="ai-actions"><button class="secondary" id="aiSave" type="button">保存设置</button><button class="primary" id="aiRun" type="button">开始 AI 操作</button></div><div class="ai-loghead">操作过程 <button class="micro" id="aiClearLog" type="button">清空</button></div><div id="aiLog" class="ai-log" aria-live="polite"><div class="emptyhist">AI 请求、回复和每一步转动会记录在这里。</div></div></form></dialog><div class="toast" id="toast"></div>
+<footer class="foot"><span>DRAG TO ORBIT　·　CLICK OR USE KEYS TO TURN</span><span class="kbd">R L U D F B　/　Shift + 字母 = 逆时针</span></footer></main><dialog id="aiDialog"><form method="dialog" class="ai-modal"><div class="cardhead"><div><div class="cardtitle">✦　底层十字 · AI 设置</div><div class="cardmeta">参数保存在此浏览器本地</div></div><button class="micro" value="close" formnovalidate aria-label="关闭">✕</button></div><label class="ai-hidden-setting">Jev API 地址<input id="aiEndpoint" type="url" readonly required></label><label class="ai-hidden-setting">代理服务地址（可选）<input id="aiProxy" type="url" placeholder="留空使用当前站点内置代理" autocomplete="url"><small>Netlify 部署时留空即可；仅使用独立跨域代理时填写。</small></label><label class="ai-hidden-setting">ModelScope Token（临时验证）<input id="aiModelScopeToken" type="password" placeholder="仅临时验证时填写" autocomplete="off"><small>仅保存在当前浏览器本地；由同源代理用于 Studio API 鉴权。验证结束后请清除此项。</small></label><label class="ai-hidden-setting">模型名称<input id="aiModel" type="text" placeholder="模型名称" required></label><label>当前 AI 模型<select id="aiProvider"><option value="jev">Jev</option><option value="deepseek">DeepSeek Flash</option></select></label><label id="jevKeyLabel">Jev API Key<input id="aiKey" type="password" placeholder="粘贴你的 Jev API Key" autocomplete="off"></label><label id="deepseekKeyLabel">DeepSeek Flash API Key<input id="deepseekKey" type="password" placeholder="粘贴你的 DeepSeek API Key" autocomplete="off"></label><label class="ai-hidden-setting">操作目标<select id="aiGoal"><option value="cross">第1步：底层十字（完成后停止）</option></select></label><div class="ai-actions"><button class="secondary" id="aiSave" type="button">保存设置</button><button class="primary" id="aiRun" type="button">开始 AI 操作</button></div><div class="ai-loghead">操作过程 <button class="micro" id="aiClearLog" type="button">清空</button></div><div id="aiLog" class="ai-log" aria-live="polite"><div class="emptyhist">AI 请求、回复和每一步转动会记录在这里。</div></div></form></dialog><div class="toast" id="toast"></div>
 <script src="cross-planner.js"></script>
 <script src="corner-planner.js"></script>
 <script src="layer-planners.js"></script>
 <script src="cross-controller.js"></script>
 <script>
 (()=>{'use strict';
+const arenaProvider=new URLSearchParams(location.search).get('arena');const arenaMode=['jev','deepseek'].includes(arenaProvider);const storageSuffix=arenaMode?'.'+arenaProvider:'';if(arenaMode)document.body.classList.add('arena');
 const three=document.createElement('script');three.src='https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js';three.onload=init;three.onerror=()=>{document.querySelector('#statusText').textContent='3D 引擎加载失败，请检查网络后刷新'};document.head.appendChild(three);
 function init(){
 const colors={U:'#f5f2e9',D:'#ffd52a',F:'#27c76f',B:'#3978ee',R:'#ed4b4b',L:'#ff8b25',inner:'#171c25'};
@@ -109,11 +112,11 @@ const turnSound=(()=>{
 })();
 
 const scene=new THREE.Scene(), camera=new THREE.PerspectiveCamera(34,1,.1,100);camera.position.set(5,4.2,6.4);camera.lookAt(0,0,0);
-const renderer=new THREE.WebGLRenderer({canvas,alpha:true,antialias:true});renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.setClearColor(0,0);renderer.outputColorSpace=THREE.SRGBColorSpace;
+const renderer=new THREE.WebGLRenderer({canvas,alpha:true,antialias:!arenaMode});renderer.setPixelRatio(Math.min(devicePixelRatio,arenaMode?1.25:2));renderer.setClearColor(0,0);renderer.outputColorSpace=THREE.SRGBColorSpace;
 scene.add(new THREE.HemisphereLight(0xe6efff,0x414650,2.15));const keyLight=new THREE.DirectionalLight(0xffffff,3.2);keyLight.position.set(4,7,5);scene.add(keyLight);const fillLight=new THREE.DirectionalLight(0xa9c4ff,1.2);fillLight.position.set(-5,2,-4);scene.add(fillLight);
 const rig=new THREE.Group();scene.add(rig);let pieces=[],moves=[],scrambleMoves=[],viewX=-25,viewY=-34,drag=null,startedAt=0,elapsed=0,timerState='idle',timerRAF=null,toastTimer,stateRevision=0;
 let aiTimerActive=false,aiTimerOwner='jev',aiTimes={jev:{elapsed:0,best:null},deepseek:{elapsed:0,best:null}};
-try{aiTimes={...aiTimes,...JSON.parse(localStorage.getItem('cubeLab.aiTimes.v1')||'{}')};}catch{}
+try{aiTimes={...aiTimes,...JSON.parse(localStorage.getItem('cubeLab.aiTimes.v1'+storageSuffix)||'{}')};}catch{}
 const rot=(v,axis,dir)=>{let [x,y,z]=v;if(axis==='x')return dir>0?[x,-z,y]:[x,z,-y];if(axis==='y')return dir>0?[z,y,-x]:[-z,y,x];return dir>0?[-y,x,z]:[y,-x,z]};
 function makeCubie(x,y,z){const group=new THREE.Group();group.position.set(x,y,z);const dark=new THREE.Mesh(new THREE.BoxGeometry(.96,.96,.96),new THREE.MeshStandardMaterial({color:0x11151c,roughness:.36,metalness:.08}));group.add(dark);const mats=[colors.R,colors.L,colors.U,colors.D,colors.F,colors.B].map(c=>new THREE.MeshStandardMaterial({color:c,roughness:.3,metalness:.02}));const dirs=[[1,0,0],[-1,0,0],[0,1,0],[0,-1,0],[0,0,1],[0,0,-1]];dirs.forEach((d,i)=>{const n=faces.find(f=>f[1][0]===d[0]&&f[1][1]===d[1]&&f[1][2]===d[2]);const name=n[0],on=(name==='R'&&x===1)||(name==='L'&&x===-1)||(name==='U'&&y===1)||(name==='D'&&y===-1)||(name==='F'&&z===1)||(name==='B'&&z===-1);if(!on)return;const plate=new THREE.Mesh(new THREE.BoxGeometry(.82,.82,.035),mats[i]);plate.position.set(d[0]*.493,d[1]*.493,d[2]*.493);if(d[0])plate.rotation.y=Math.PI/2;if(d[1])plate.rotation.x=-Math.PI/2;plate.position.x+=d[0]*.001;plate.position.y+=d[1]*.001;plate.position.z+=d[2]*.001;group.add(plate)});rig.add(group);return {home:[x,y,z],pos:[x,y,z],normals:faces.map(f=>f[1].slice()),el:group}}
 function build(){stateRevision++;for(const p of pieces)rig.remove(p.el);pieces=[];for(let x=-1;x<=1;x++)for(let y=-1;y<=1;y++)for(let z=-1;z<=1;z++)pieces.push(makeCubie(x,y,z));render()}
@@ -175,8 +178,11 @@ function serializeCube(){return pieces.filter(p=>p.home.some(v=>v!==0)).map(p=>(
   stickers:faces.flatMap(([face,normal],i)=>normal.reduce((s,v,j)=>s+v*p.home[j],0)===1
     ?[{color:colors[face],homeFace:face,normal:p.normals[i].slice()}]:[])
 }));}
-const cubeStateKey='cubeLab.cube.v1';
+const cubeStateKey='cubeLab.cube.v1'+storageSuffix;
+let staleCubeState=false;
+function guardFreshCube(){if(!staleCubeState)return true;notify('另一个页面已更新此魔方，请刷新当前页面后再操作');return false;}
 function persistCube(){
+  if(staleCubeState)return;
   try{localStorage.setItem(cubeStateKey,JSON.stringify({version:1,cube:serializeCube(),moves,scrambleMoves,viewX,viewY}));}catch{}
 }
 function restoreCube(){
@@ -245,6 +251,8 @@ function renderSevenProgress(){
   const p=planners[selectedGoal].status(serializeCube());progressPanel.replaceChildren();
   const number=stageNumber(selectedGoal),orientation=number===4||number===5;
   const title=document.createElement('strong');title.textContent='第'+number+'步 · '+stageNames[selectedGoal]+' '+p.count+'/4';progressPanel.append(title);
+  const completedStages=stageOrder.slice(0,number-1).filter(goal=>planners[goal].status(serializeCube()).complete);
+  if(completedStages.length){const done=document.createElement('small');done.className='stage-prerequisite';done.textContent='✓ 已完成：'+completedStages.map(goal=>'第'+stageNumber(goal)+'步 '+stageNames[goal]).join(' · ');progressPanel.append(done);}
   if(number>1){const prerequisite=document.createElement('small');prerequisite.className='stage-prerequisite';prerequisite.textContent=p.prerequisiteComplete?'✓ 前置阶段已完成，需保持':aiBusy?'公式执行中，结束后恢复前置阶段':'请先完成第'+(number-1)+'步 · '+stageNames[stageOrder[number-2]];progressPanel.append(prerequisite);}
   (p.items||p.corners||p.edges).forEach(item=>{const row=document.createElement('div');row.textContent=(item.solved?'✓ ':'○ ')+item.name+(orientation?(item.solved?' · 白色朝上':' · 待定向'):(item.solved?' · 已对齐':' · 待归位'));row.style.color=item.solved?'#b6f36a':'#d7e0eb';progressPanel.append(row);});
   const note=document.createElement('small');note.textContent=number===7?'保护前两层和顶角 · 六面全部对齐后复原':number===6?'四个顶角位置、三色全部对齐 · 顶棱留给第7步':orientation?'形态：'+p.shape+' · 此步仅定向，侧色顺序留给后续步骤':selectedGoal==='middle'?'底层完整 + 四个中棱位置、朝向正确':selectedGoal==='corners'?'底面同色 + 第一层侧色对齐 · 完成后停止':'黄色朝下 · 侧色对齐 · 完成后停止';progressPanel.append(note);
@@ -253,17 +261,33 @@ function renderSevenProgress(){
     p.wholeCube.faces.forEach(face=>{const row=document.createElement('div');row.textContent=(face.complete?'✓ ':'○ ')+face.name+' '+face.count+'/9';row.style.color=face.complete?'#b6f36a':'#d7e0eb';progressPanel.append(row);});
   }
 }
-function jevTransport(){const custom=document.querySelector('#aiProxy').value.trim();if(custom){const base=new URL(custom);if(base.protocol!=='https:')throw new Error('代理服务地址必须使用 HTTPS');return base.href.replace(/\/$/,'')+'/api/jev';}return location.protocol==='file:'?'http://127.0.0.1:8787/api/jev':'/api/jev';}
-const aiDialog=document.querySelector('#aiDialog'), aiLog=document.querySelector('#aiLog'),aiLiveLog=document.querySelector('#aiLiveLog'),aiConfigKey='cubeLab.aiConfig.v1',aiLogKey='cubeLab.aiLog.v1',timerRecordsKey='cubeLab.aiTimes.v1';let aiBusy=false;
+function jevTransport(){
+  const fallback=location.protocol==='file:'?'http://127.0.0.1:8787/api/jev':'/api/jev';
+  const input=document.querySelector('#aiProxy'),custom=input.value.trim();
+  if(!custom)return fallback;
+  try{
+    const base=new URL(custom);
+    if(base.protocol!=='https:'||base.pathname!=='/'||base.search||base.hash)throw new Error('无效代理地址');
+    return base.origin+'/api/jev';
+  }catch{
+    input.value='';
+    try{const config=JSON.parse(localStorage.getItem(aiConfigKey)||'{}');config.proxyUrl='';localStorage.setItem(aiConfigKey,JSON.stringify(config));}catch{}
+    addAILog('已清除无效的自定义代理地址，改用当前站点内置代理',{type:'proxy-fallback'});
+    notify('代理地址无效，已自动切换为当前站点代理');
+    return fallback;
+  }
+}
+if(arenaMode)document.querySelector('.ai-live-title').textContent=arenaProvider==='deepseek'?'✦ DEEPSEEK FLASH LIVE':'✦ JEV LIVE';
+const aiDialog=document.querySelector('#aiDialog'), aiLog=document.querySelector('#aiLog'),aiLiveLog=document.querySelector('#aiLiveLog'),aiConfigKey='cubeLab.aiConfig.v1'+storageSuffix,aiLogKey='cubeLab.aiLog.v1'+storageSuffix,timerRecordsKey='cubeLab.aiTimes.v1'+storageSuffix;let aiBusy=false;
 document.querySelector('#aiDialog .cardtitle').textContent='✦ 分层复原 · AI 设置';
 document.querySelector('#aiGoal').innerHTML=stageOrder.map((goal,i)=>'<option value="'+goal+'">第'+(i+1)+'步：'+stageNames[goal]+'（完成后停止）</option>').join('');
 function loadAIConfig(){
   document.querySelector('#aiEndpoint').value='https://api.typesafe.ai/v1/systemone';
   document.querySelector('#aiModel').value='jev-latest';
-  try{const c=JSON.parse(localStorage.getItem(aiConfigKey)||'{}');if(c.provider)document.querySelector('#aiProvider').value=c.provider;if(c.deepseekKey)document.querySelector('#deepseekKey').value=c.deepseekKey;if(c.model)document.querySelector('#aiModel').value=c.model;if(c.apiKey)document.querySelector('#aiKey').value=c.apiKey;if(c.proxyUrl)document.querySelector('#aiProxy').value=c.proxyUrl;if(c.modelScopeToken)document.querySelector('#aiModelScopeToken').value=c.modelScopeToken;}catch{}
-  document.querySelector('#aiGoal').value=selectedGoal;updateProviderFields();
+  try{const c=JSON.parse(localStorage.getItem(aiConfigKey)||localStorage.getItem('cubeLab.aiConfig.v1')||'{}');if(c.provider)document.querySelector('#aiProvider').value=c.provider;if(c.deepseekKey)document.querySelector('#deepseekKey').value=c.deepseekKey;if(c.model)document.querySelector('#aiModel').value=c.model;if(c.apiKey)document.querySelector('#aiKey').value=c.apiKey;if(c.proxyUrl)document.querySelector('#aiProxy').value=c.proxyUrl;if(c.modelScopeToken)document.querySelector('#aiModelScopeToken').value=c.modelScopeToken;}catch{}
+  if(arenaMode){document.querySelector('#aiProvider').value=arenaProvider;document.querySelector('#aiProvider').disabled=true;document.querySelector('#jevKeyLabel').hidden=arenaProvider!=='jev';document.querySelector('#deepseekKeyLabel').hidden=arenaProvider!=='deepseek';}document.querySelector('#aiGoal').value=selectedGoal;updateProviderFields();if(arenaMode){document.querySelector('#jevKeyLabel').hidden=arenaProvider!=='jev';document.querySelector('#deepseekKeyLabel').hidden=arenaProvider!=='deepseek';}
 }
-function updateProviderFields(){const ds=document.querySelector('#aiProvider').value==='deepseek';document.querySelector('#jevKeyLabel').hidden=ds;document.querySelector('#deepseekKeyLabel').hidden=!ds;document.querySelector('#aiModel').value=ds?'deepseek-flash':'jev-latest';}
+function updateProviderFields(){const ds=document.querySelector('#aiProvider').value==='deepseek';if(arenaMode){document.querySelector('#jevKeyLabel').hidden=arenaProvider!=='jev';document.querySelector('#deepseekKeyLabel').hidden=arenaProvider!=='deepseek';}else{document.querySelector('#jevKeyLabel').hidden=false;document.querySelector('#deepseekKeyLabel').hidden=false;}document.querySelector('#aiModel').value=ds?'deepseek-flash':'jev-latest';}
 function autosaveAIKeys(){try{const c=JSON.parse(localStorage.getItem(aiConfigKey)||'{}');c.provider=document.querySelector('#aiProvider').value;c.apiKey=document.querySelector('#aiKey').value.trim();c.deepseekKey=document.querySelector('#deepseekKey').value.trim();localStorage.setItem(aiConfigKey,JSON.stringify(c));}catch{}}
 function saveAIConfig(){
   let proxyUrl=document.querySelector('#aiProxy').value.trim();try{if(proxyUrl){const parsed=new URL(proxyUrl);if(parsed.protocol!=='https:'||parsed.pathname!=='/'||parsed.search||parsed.hash)throw new Error();proxyUrl=parsed.origin;}}catch{return notify('代理地址请填写 HTTPS Worker 根地址，例如 https://cube-proxy.example.workers.dev');}
@@ -275,6 +299,7 @@ function saveAIConfig(){
 let aiEvents=[];
 try{const saved=JSON.parse(localStorage.getItem(aiLogKey)||'[]');if(Array.isArray(saved))aiEvents=saved;}catch{}
 function addAILog(message,details={}){
+  if(staleCubeState)return;
   if(typeof details==='boolean')details={error:details};
   aiEvents.push({...details,time:new Date().toLocaleTimeString(),message});aiEvents=aiEvents.slice(-400);
   try{localStorage.setItem(aiLogKey,JSON.stringify(aiEvents));}catch{}
@@ -302,8 +327,10 @@ candidateDetails.className='cross-options';candidateDetails.append(candidateSumm
 aiLiveLog.before(liveStatus,candidateDetails,liveButtons);
 function renderCrossUI(change){
   crossUI={...crossUI,...change};
-  const alreadyComplete=pieces.length&&planners[selectedGoal].status(serializeCube()).complete;
-  const completionText=selectedGoal==='topEdges'?'整个魔方已复原 · 六面贴纸 54/54':stageNames[selectedGoal]+'完成，已自动停止';
+  const selectedProgress=pieces.length?planners[selectedGoal].status(serializeCube()):null;
+  const wholeCubeComplete=pieces.length&&planners.topEdges.status(serializeCube()).complete;
+  const alreadyComplete=selectedProgress?.complete;
+  const completionText=selectedGoal==='topEdges'?'整个魔方已复原 · 六面贴纸 54/54':stageNames[selectedGoal]+'已完成';
   const labels={idle:alreadyComplete?completionText:'准备开始第'+stageNumber(selectedGoal)+'步：'+stageNames[selectedGoal],planning:'正在生成并模拟方案',deciding:'等待 '+(selectedProvider==='deepseek'?'DeepSeek Flash':'Jev')+' 选择方案',executing:'正在执行完整方案',verified:'方案检查通过',complete:completionText,paused:(selectedProvider==='deepseek'?'DeepSeek Flash':'Jev')+' 选择暂停',stopping:selectedGoal!=='cross'?'正在停止，等待当前公式结束以恢复前置阶段':'正在停止，等待当前转动完成',stopped:'已停止，可从当前状态继续',error:'已暂停'};
   const parts=[...(allRun?['一键复原 · 第 '+stageNumber(selectedGoal)+' / 7 步']:[]),scrambleBusy?'正在打乱 '+scrambleStep+'/'+scramblePlanned.length+' · '+(scramblePlanned[scrambleStep-1]||''):(labels[crossUI.phase]||crossUI.phase)];
   if(crossUI.activePlan&&['executing','stopping'].includes(crossUI.phase)){
@@ -322,17 +349,17 @@ function renderCrossUI(change){
     row.textContent=p.id+' · '+p.target+'\n'+p.moves.join(' ')+'\n'+p.beforeCount+'/4 → '+p.afterCount+'/4 · '+p.moves.length+' 次转动';candidateList.append(row);
   }
   const busy=crossUI.running||allRun||scrambleBusy;
-  document.querySelector('#allStepsStart').disabled=busy;
+  document.querySelector('#allStepsStart').disabled=busy||staleCubeState;
   document.querySelector('#allStepsStart').textContent=allRun?'正在连续完成七步…':'一键完成七步';
-  document.querySelector('#crossStart').disabled=busy;
+  document.querySelector('#crossStart').disabled=busy||staleCubeState||Boolean(wholeCubeComplete);
   document.querySelector('#crossStart').textContent='开始第'+stageNumber(selectedGoal)+'步 · '+stageNames[selectedGoal];
   document.querySelector('#crossStop').disabled=scrambleBusy||!busy||crossUI.phase==='stopping'||allStopRequested;
-  document.querySelector('#aiRun').disabled=busy;
-  document.querySelector('#aiOpen').disabled=busy;
-  document.querySelector('#aiGoal').disabled=busy;
-  stageTabs.querySelectorAll('button').forEach(button=>{button.disabled=busy;button.setAttribute('aria-pressed',String(button.dataset.goal===selectedGoal));});
+  document.querySelector('#aiRun').disabled=busy||staleCubeState;
+  document.querySelector('#aiOpen').disabled=busy||staleCubeState;
+  document.querySelector('#aiGoal').disabled=busy||staleCubeState;
+  stageTabs.querySelectorAll('button').forEach(button=>{const goal=button.dataset.goal,done=pieces.length&&planners[goal].status(serializeCube()).complete;button.disabled=busy||staleCubeState;button.setAttribute('aria-pressed',String(goal===selectedGoal));button.textContent=done?'✓ 第'+stageNumber(goal)+'步已完成 · '+stageNames[goal]:'开始第'+stageNumber(goal)+'步 · '+stageNames[goal];});
 }
-let selectedProvider='jev';
+let selectedProvider=arenaMode?arenaProvider:'jev';
 const controllerAPI={
   snapshot:serializeCube,revision:()=>stateRevision,idle:()=>!scrambleBusy&&!turnActive&&!turnQueue.length,
   execute:m=>applyMove(m),log:addAILog,update:renderCrossUI,
@@ -340,39 +367,63 @@ const controllerAPI={
     const wasBusy=aiBusy;aiBusy=value||allRun;
     if(aiBusy&&!wasBusy&&!planners[selectedGoal].status(serializeCube()).complete){aiTimerActive=true;aiTimerOwner=selectedProvider;elapsed=aiTimes[aiTimerOwner].elapsed||0;startTimer(aiTimerOwner==='deepseek'?'DeepSeek Flash 自动计时中':'Jev 自动计时中');}
     if(!aiBusy&&wasBusy&&aiTimerActive){aiTimerActive=false;pauseTimer(planners.topEdges.status(serializeCube()).complete?'AI 复原完成':'AI 计时已暂停');aiTimes[aiTimerOwner].elapsed=elapsed;if(planners.topEdges.status(serializeCube()).complete){aiTimes[aiTimerOwner].best=aiTimes[aiTimerOwner].best===null?elapsed:Math.min(aiTimes[aiTimerOwner].best,elapsed);aiTimes[aiTimerOwner].elapsed=0;}try{localStorage.setItem(timerRecordsKey,JSON.stringify(aiTimes));}catch{}renderAITimes();}
-    for(const id of ['newScramble','resetTop','resetBtn','undoTop','undoBtn','timerBtn','timerReset'])document.querySelector('#'+id).disabled=aiBusy;
-    document.querySelectorAll('#controls button').forEach(b=>b.disabled=aiBusy);}
+    for(const id of ['newScramble','resetTop','resetBtn','undoTop','undoBtn','timerBtn','timerReset'])document.querySelector('#'+id).disabled=aiBusy||staleCubeState;
+    document.querySelectorAll('#controls button').forEach(b=>b.disabled=aiBusy||staleCubeState);}
 };
 const controllers=Object.fromEntries(stageOrder.map(goal=>[goal,CrossController.create(controllerAPI,planners[goal])]));
 const isAIRunning=()=>scrambleBusy||allRun||Object.values(controllers).some(controller=>controller.running);
+window.addEventListener('storage',event=>{
+  if(event.key!==cubeStateKey||event.newValue===null)return;
+  staleCubeState=true;
+  allStopRequested=true;
+  for(const controller of Object.values(controllers))controller.stop();
+  for(const id of ['allStepsStart','crossStart','aiRun','aiOpen','newScramble','resetTop','resetBtn','undoTop','undoBtn']){const button=document.querySelector('#'+id);if(button)button.disabled=true;}
+  document.querySelectorAll('#controls button,[data-goal]').forEach(button=>button.disabled=true);
+  const message='检测到另一个标签页已更新此模型的魔方状态。为避免使用旧状态发出操作或覆盖新状态，请刷新本页后继续。';
+  renderCrossUI({phase:'error',error:message});
+  document.querySelector('#statusText').textContent='魔方状态已在另一页面更新 · 请刷新本页';
+  notify('此页面状态已过期，请刷新后继续');
+});
 function selectGoal(goal,internal=false){
   if(scrambleBusy||Object.values(controllers).some(controller=>controller.running)||(allRun&&!internal)||!planners[goal])return;
   selectedGoal=goal;document.querySelector('#aiGoal').value=goal;
   renderSevenProgress();renderCrossUI({phase:'idle',error:'',candidates:[],activePlan:null,step:0,total:0,segment:''});
 }
 stageTabs.querySelectorAll('button').forEach(button=>button.onclick=()=>runAI(button.dataset.goal));
-function renderAITimes(){let node=document.querySelector('#aiTimes');if(!node){node=document.createElement('div');node.id='aiTimes';node.className='cardmeta';document.querySelector('.timer').after(node);}node.innerHTML='Jev '+fmt(aiTimes.jev.elapsed||0)+' / 最佳 '+(aiTimes.jev.best===null?'—':fmt(aiTimes.jev.best))+'<br>DeepSeek '+fmt(aiTimes.deepseek.elapsed||0)+' / 最佳 '+(aiTimes.deepseek.best===null?'—':fmt(aiTimes.deepseek.best));}
+function renderAITimes(){let node=document.querySelector('#aiTimes');if(!node){node=document.createElement('div');node.id='aiTimes';node.className='cardmeta';document.querySelector('.timer').after(node);}if(arenaMode){const time=aiTimes[arenaProvider];node.textContent=(arenaProvider==='deepseek'?'DeepSeek Flash':'Jev')+' 累计 '+fmt(time.elapsed||0)+' · 最佳 '+(time.best===null?'—':fmt(time.best));}else node.innerHTML='Jev '+fmt(aiTimes.jev.elapsed||0)+' / 最佳 '+(aiTimes.jev.best===null?'—':fmt(aiTimes.jev.best))+'<br>DeepSeek '+fmt(aiTimes.deepseek.elapsed||0)+' / 最佳 '+(aiTimes.deepseek.best===null?'—':fmt(aiTimes.deepseek.best));}
 document.querySelector('#aiGoal').onchange=event=>selectGoal(event.target.value);
 function activeAIConfig(continuous=false){const provider=document.querySelector('#aiProvider').value,apiKey=(provider==='deepseek'?document.querySelector('#deepseekKey'):document.querySelector('#aiKey')).value.trim();return {provider,model:provider==='deepseek'?'deepseek-flash':(document.querySelector('#aiModel').value.trim()||'jev-latest'),apiKey,modelScopeToken:document.querySelector('#aiModelScopeToken').value.trim(),transport:jevTransport(),continuous};}
-async function runAI(goal=selectedGoal){if(goal!==selectedGoal)selectGoal(goal);selectedProvider=document.querySelector('#aiProvider').value;
+function requestMissingKey(config,action){
+  const model=config.provider==='deepseek'?'DeepSeek Flash':'Jev';
+  const message='尚未开始：请先在 AI 设置中填写 '+model+' API Key，然后再次点击'+action+'。';
+  addAILog(model+' API Key 未填写，未发送模型请求',{type:'missing-key',provider:config.provider,error:true});
+  renderCrossUI({phase:'error',error:message});
+  if(!aiDialog.open)aiDialog.show();
+  notify('请先填写 '+model+' API Key');
+  return false;
+}
+async function runAI(goal=selectedGoal){if(!guardFreshCube())return;if(goal!==selectedGoal)selectGoal(goal);selectedProvider=document.querySelector('#aiProvider').value;
   if(isAIRunning())return;
   if(turnActive||turnQueue.length){notify('请等待当前转动完成');return;}
+  if(planners.topEdges.status(serializeCube()).complete){notify('当前魔方已经复原，请先重新打乱再开始');renderCrossUI({phase:'complete'});return;}
   try{planners[selectedGoal].ready?.(serializeCube());}catch(error){notify(error.message);renderCrossUI({phase:'error',error:error.message+'。请从左侧选择对应阶段。'});return;}
-  const config=activeAIConfig();if(!config.apiKey&&!planners[selectedGoal].status(serializeCube()).complete){if(!aiDialog.open)aiDialog.show();notify('请先填写所选模型的 API Key');return;}
+  if(planners[selectedGoal].status(serializeCube()).complete){const finished=selectedGoal,next=firstIncompleteGoal(),message='第'+stageNumber(finished)+'步 '+stageNames[finished]+' 已完成（4/4），本次未调用模型；当前可继续第'+stageNumber(next)+'步 '+stageNames[next]+'。如需重新做第一步，请先同步重新打乱。';if(next!==selectedGoal)selectGoal(next);addAILog(message,{type:'stage-already-complete',stage:stageNumber(finished)});renderCrossUI({phase:'idle',error:message});notify(stageNames[finished]+'已完成，请重新打乱或继续当前阶段');return;}
+  const config=activeAIConfig();if(!config.apiKey){requestMissingKey(config,'当前阶段按钮');return;}
   if(!saveAIConfig())return;
   renderCrossUI({error:'',candidates:[],activePlan:null,step:0,total:0});
   await controllers[selectedGoal].start(config);
-  if(planners[selectedGoal].status(serializeCube()).complete){const next=stageOrder[stageNumber(selectedGoal)];if(next){const finished=stageNames[selectedGoal];selectGoal(next);notify(finished+'完成，可以开始第'+stageNumber(next)+'步'+stageNames[next]);}}
+  if(planners[selectedGoal].status(serializeCube()).complete){const finishedGoal=selectedGoal,next=stageOrder[stageNumber(finishedGoal)];if(finishedGoal==='cross'){viewX=-100;viewY=35;render();persistCube();}if(next){const finished=stageNames[finishedGoal];selectGoal(next);notify(finished+'完成，可以开始第'+stageNumber(next)+'步'+stageNames[next]);}}
 }
 document.querySelector('#crossStart').onclick=()=>runAI();
 stageTabs.querySelectorAll('button').forEach(button=>{button.textContent='开始第'+stageNumber(button.dataset.goal)+'步 · '+stageNames[button.dataset.goal];button.onclick=()=>runAI(button.dataset.goal);});
 document.querySelector('#aiProvider').onchange=()=>{updateProviderFields();autosaveAIKeys();const provider=document.querySelector('#aiProvider').value;document.querySelector('#time').textContent=fmt(aiTimes[provider].elapsed||0);document.querySelector('#timerLabel').textContent=provider==='deepseek'?'DeepSeek Flash 上次用时':'Jev 上次用时';};
 async function runAllAI(){
+  if(!guardFreshCube())return;
   if(isAIRunning())return;
   if(turnActive||turnQueue.length){notify('请等待当前转动完成');return;}
   selectGoal(firstIncompleteGoal());
-  if(planners.topEdges.status(serializeCube()).complete){notify('魔方已经复原，无需调用 Jev');renderCrossUI({phase:'complete'});return;}
-  selectedProvider=document.querySelector('#aiProvider').value;const config=activeAIConfig(true);if(!config.apiKey){if(!aiDialog.open)aiDialog.show();notify('请先填写所选模型的 API Key，再点击一键完成七步');return;}
+  if(planners.topEdges.status(serializeCube()).complete){notify('当前魔方已经复原，请先同步重新打乱');renderCrossUI({phase:'complete'});return;}
+  selectedProvider=document.querySelector('#aiProvider').value;const config=activeAIConfig(true);if(!config.apiKey){requestMissingKey(config,'一键完成七步');return;}
   if(!saveAIConfig())return;
   selectedProvider=config.provider;
   allRun=true;allStopRequested=false;controllerAPI.lock(true);
@@ -391,10 +442,15 @@ async function runAllAI(){
       if(result?.status!=='complete'||!planners[goal].status(serializeCube()).complete){
         addAILog('一键复原已暂停于第'+stageNumber(goal)+'步，不再进入下一阶段',{type:'all-paused',stage:stageNumber(goal)});return;
       }
+      if(goal==='cross'){viewX=-100;viewY=35;render();persistCube();}
     }
     if(allStopRequested){addAILog('一键复原已停止；再次点击可从当前状态继续',{type:'all-stopped'});renderCrossUI({phase:'stopped'});return;}
     const finalProgress=planners.topEdges.status(serializeCube());
-    if(!finalProgress.complete)throw new Error('最终六面检查未通过，已暂停');
+    if(!finalProgress.complete){
+      const missing=stageOrder.find(goal=>!planners[goal].status(serializeCube()).complete);
+      if(missing){selectGoal(missing,true);notify('七步阶段检查已通过，但整魔方检查未通过；已停在第'+stageNumber(missing)+'步，请继续');renderCrossUI({phase:'error',error:'整体复原检查未通过，重新检查当前未完成阶段：第'+stageNumber(missing)+'步 '+stageNames[missing]});return;}
+      throw new Error('最终六面检查未通过，已暂停');
+    }
     selectGoal('topEdges',true);
     addAILog('一键七步全部完成：六面贴纸54/54，整个魔方已复原',{type:'all-complete',finalState:serializeCube(),wholeCube:finalProgress.wholeCube});
     renderCrossUI({phase:'complete'});notify('七步完成，魔方已复原！');
@@ -429,8 +485,8 @@ function applyMove(move,record=true,animate=true){
 function invert(m){if(m.endsWith('2'))return m;return m.endsWith("'")?m[0]:m+"'"}
 const moveDefs=[['U','上层','U'],['D','下层','D'],['L','左层','L'],['R','右层','R'],['F','前层','F'],['B','后层','B']];
 function setupControls(){const c=document.querySelector('#controls');c.style.gridTemplateColumns='repeat(3,minmax(0,1fr))';for(const [key,label] of moveDefs){const title=document.createElement('div');title.style.cssText='grid-column:1/-1;font-size:12px;padding-top:6px';title.textContent=key+' · '+label;c.appendChild(title);for(const [suffix,text] of [['','顺转90°'],["'",'逆转90°'],['2','半圈180°']]){const b=document.createElement('button');b.className='movebtn';b.textContent=key+suffix;b.title=label+' '+text;const detail=document.createElement('small');detail.style.cssText='display:block;font-size:9px;margin-top:5px;color:#c6d0de';detail.textContent=text;b.appendChild(detail);b.onclick=()=>doTurn(key+suffix);c.appendChild(b)}}}
-function doTurn(m){if(aiBusy||scrambleBusy){notify('正在自动转动，请等待本轮结束');return}applyMove(m);}
-async function undoMove(){if(turnActive||aiBusy||scrambleBusy||turnQueue.length)return;let m=moves.pop();if(!m){notify('没有可撤销的转动');return}await applyMove(invert(m),false);renderHistory();updateStatus()}
+function doTurn(m){if(!guardFreshCube())return;if(aiBusy||scrambleBusy){notify('正在自动转动，请等待本轮结束');return}applyMove(m);}
+async function undoMove(){if(!guardFreshCube()||turnActive||aiBusy||scrambleBusy||turnQueue.length)return;let m=moves.pop();if(!m){notify('没有可撤销的转动');return}await applyMove(invert(m),false);renderHistory();updateStatus()}
 function renderHistory(){historyEl.innerHTML='';if(!moves.length){historyEl.innerHTML='<div class="emptyhist">转动后会显示在这里</div>';return}for(const m of moves.slice(-35)){let s=document.createElement('span');s.className='chip';s.textContent=m;historyEl.appendChild(s)}historyEl.scrollTop=historyEl.scrollHeight}
 function renderScrambleSequence(seq,completed,current=-1){
   const container=document.querySelector('#scramble');container.className='scramble';container.replaceChildren();
@@ -439,10 +495,11 @@ function renderScrambleSequence(seq,completed,current=-1){
     else token.style.opacity=i<completed?'1':'.4';container.append(token);});
   document.querySelector('#scrambleLen').textContent=scrambleBusy?completed+'/'+seq.length+' 已完成':completed+'/'+seq.length+' 完成';
 }
-async function scramble(){
-  if(turnActive||aiBusy||scrambleBusy||turnQueue.length){notify('请等待当前转动完成');return;}
-  const choices=['R','L','U','D','F','B'],seq=[];let last='';
-  for(let i=0;i<20;i++){let f;do{f=choices[Math.floor(Math.random()*6)];}while(f===last);last=f;seq.push(f+['',"'",'2'][Math.floor(Math.random()*3)]);}
+async function scramble(sharedSequence=null,requestId=null){
+  if(!guardFreshCube()){if(requestId&&arenaMode)window.parent.postMessage({type:'cube-arena-scramble-result',requestId,provider:arenaProvider,success:false,movesCompleted:0},location.origin);return;}
+  if(turnActive||aiBusy||scrambleBusy||turnQueue.length){notify('请等待当前转动完成');if(requestId&&arenaMode)window.parent.postMessage({type:'cube-arena-scramble-result',requestId,provider:arenaProvider,success:false,movesCompleted:scrambleMoves.length},location.origin);return;}
+  const choices=['R','L','U','D','F','B'],seq=Array.isArray(sharedSequence)?sharedSequence.slice():[];let last='';
+  if(!seq.length)for(let i=0;i<20;i++){let f;do{f=choices[Math.floor(Math.random()*6)];}while(f===last);last=f;seq.push(f+['',"'",'2'][Math.floor(Math.random()*3)]);}
   resetTimer();selectGoal('cross');moves=[];scrambleMoves=[];renderHistory();scramblePlanned=seq;scrambleStep=0;scrambleBusy=true;
   const lockedIds=['newScramble','resetTop','resetBtn','undoTop','undoBtn','timerBtn','timerReset','clearHistory','copyScramble'];
   lockedIds.forEach(id=>document.querySelector('#'+id).disabled=true);document.querySelectorAll('#controls button').forEach(b=>b.disabled=true);
@@ -451,6 +508,7 @@ async function scramble(){
   let success=false;
   try{
     for(let i=0;i<seq.length;i++){
+      if(!guardFreshCube())throw new Error('页面状态已过期');
       scrambleStep=i+1;renderScrambleSequence(seq,i,i);renderCrossUI({phase:'scrambling',candidates:[],activePlan:null,error:''});
       await applyMove(seq[i],false,true);
       scrambleMoves.push(seq[i]);persistCube();renderScrambleSequence(seq,i+1);
@@ -459,12 +517,13 @@ async function scramble(){
     success=true;addAILog('20步打乱完成，可以开始手动或 AI 复原',{type:'scramble-complete',moves:scrambleMoves.slice()});notify('打乱完成，挑战开始！');
   }catch(error){addAILog('打乱中止：'+error.message,{type:'scramble-error',error:true});notify('打乱中止，已保留实际完成的转动');}
   finally{
-    scrambleBusy=false;lockedIds.forEach(id=>document.querySelector('#'+id).disabled=false);document.querySelectorAll('#controls button').forEach(b=>b.disabled=false);
+    scrambleBusy=false;lockedIds.forEach(id=>document.querySelector('#'+id).disabled=staleCubeState);document.querySelectorAll('#controls button').forEach(b=>b.disabled=staleCubeState);
     document.querySelector('#newScramble').textContent='↻　重新打乱';renderScrambleSequence(seq,scrambleMoves.length);updateStatus();
     if(!success)document.querySelector('#scrambleLen').textContent='已中止 · '+scrambleMoves.length+'/'+seq.length;
+    if(requestId&&arenaMode)window.parent.postMessage({type:'cube-arena-scramble-result',requestId,provider:arenaProvider,success,movesCompleted:scrambleMoves.length},location.origin);
   }
 }
-function resetCube(){if(turnActive||aiBusy||scrambleBusy||turnQueue.length){notify("请等待当前转动完成");return}build();moves=[];scrambleMoves=[];renderHistory();document.querySelector('#scramble').className='scramble empty';document.querySelector('#scramble').textContent='生成一组随机公式，开始挑战。';resetTimer();viewX=-25;viewY=-34;render();selectGoal('cross');updateStatus();notify('魔方已复原')}
+function resetCube(){if(!guardFreshCube())return;if(turnActive||aiBusy||scrambleBusy||turnQueue.length){notify("请等待当前转动完成");return}build();moves=[];scrambleMoves=[];renderHistory();document.querySelector('#scramble').className='scramble empty';document.querySelector('#scramble').textContent='生成一组随机公式，开始挑战。';resetTimer();viewX=-25;viewY=-34;render();selectGoal('cross');updateStatus();notify('魔方已复原')}
 function updateStatus(){renderSevenProgress();const goal=aiBusy?selectedGoal:firstIncompleteGoal(),p=planners[goal].status(serializeCube());document.querySelector('#statusText').textContent=scrambleBusy?'正在打乱 '+scrambleStep+'/'+scramblePlanned.length+' · '+(scramblePlanned[scrambleStep-1]||''):p.complete&&goal==='topEdges'?'魔方已复原 · 六面全部对齐 · 54/54':'第'+stageNumber(goal)+'步 · '+stageNames[goal]+' '+p.count+'/4';if(!aiBusy&&!isAIRunning())renderCrossUI({phase:'idle',candidates:[],activePlan:null,error:''});persistCube();}
 function notify(s){const t=document.querySelector('#toast');t.textContent=s;t.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove('show'),1800)}
 function fmt(ms){let cs=Math.floor(ms/10)%100,sec=Math.floor(ms/1000)%60,min=Math.floor(ms/60000);return `${String(min).padStart(2,'0')}:${String(sec).padStart(2,'0')}.${String(cs).padStart(2,'0')}`}
@@ -488,7 +547,13 @@ new ResizeObserver(resize).observe(stage);
 setupControls();build();restoreCube();resize();
 selectGoal(firstIncompleteGoal());
 loadAIConfig();renderAILog();for(const id of ['aiKey','deepseekKey'])document.querySelector('#'+id).addEventListener('input',autosaveAIKeys);document.querySelector('#aiOpen').onclick=runAI;document.querySelector('#aiSave').onclick=saveAIConfig;document.querySelector('#aiRun').onclick=runAI;document.querySelector('#aiClearLog').onclick=()=>{if(aiBusy)return;aiEvents=[];try{localStorage.removeItem(aiLogKey);}catch{}renderAILog()};
-document.querySelector('#newScramble').onclick=scramble;document.querySelector('#resetBtn').onclick=resetCube;document.querySelector('#resetTop').onclick=resetCube;document.querySelector('#undoBtn').onclick=undoMove;document.querySelector('#undoTop').onclick=undoMove;document.querySelector('#timerBtn').onclick=toggleTimer;document.querySelector('#timerReset').onclick=resetTimer;document.querySelector('#clearHistory').onclick=()=>{moves=[];renderHistory();updateStatus()};document.querySelector('#copyScramble').onclick=async()=>{if(!scrambleMoves.length){notify('请先生成一组公式');return}try{await navigator.clipboard.writeText(scrambleMoves.join(' '));notify('公式已复制')}catch{notify('浏览器不支持复制')}};
+document.querySelector('#newScramble').onclick=()=>scramble();
+window.addEventListener('message',event=>{
+  if(event.origin!==location.origin||event.data?.type!=='cube-arena-scramble'||!Array.isArray(event.data.moves))return;
+  scramble(event.data.moves,event.data.requestId||null);
+});
+if(arenaMode)window.parent.postMessage({type:'cube-arena-ready',provider:arenaProvider},location.origin);
+document.querySelector('#resetBtn').onclick=resetCube;document.querySelector('#resetTop').onclick=resetCube;document.querySelector('#undoBtn').onclick=undoMove;document.querySelector('#undoTop').onclick=undoMove;document.querySelector('#timerBtn').onclick=toggleTimer;document.querySelector('#timerReset').onclick=resetTimer;document.querySelector('#clearHistory').onclick=()=>{moves=[];renderHistory();updateStatus()};document.querySelector('#copyScramble').onclick=async()=>{if(!scrambleMoves.length){notify('请先生成一组公式');return}try{await navigator.clipboard.writeText(scrambleMoves.join(' '));notify('公式已复制')}catch{notify('浏览器不支持复制')}};
 window.addEventListener('keydown',e=>{if(e.target.matches('input,textarea,select,button'))return;if(e.code==='Space'){e.preventDefault();toggleTimer();return}if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='z'){e.preventDefault();undoMove();return}const k=e.key.toUpperCase();if(axisInfo[k]){e.preventDefault();doTurn(k+(e.shiftKey?"'":''))}});
 stage.addEventListener('pointerdown',e=>{if(e.target.closest('button'))return;drag={x:e.clientX,y:e.clientY,viewX,viewY,id:e.pointerId};stage.setPointerCapture(e.pointerId)});stage.addEventListener('pointermove',e=>{if(!drag)return;viewY=drag.viewY+(e.clientX-drag.x)*.48;viewX=Math.max(-160,Math.min(160,drag.viewX-(e.clientY-drag.y)*.48));render()});stage.addEventListener('pointerup',()=>drag=null);stage.addEventListener('pointercancel',()=>drag=null);window.addEventListener('resize',resize);
 document.querySelector('#bottomView').onclick=()=>{viewX=-100;viewY=35;render();persistCube();};

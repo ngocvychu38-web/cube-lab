@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#27313e">
+<title>Cube Lab · Jev vs DeepSeek Flash</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:linear-gradient(145deg,#202a37,#344353);color:#f5f7fa;font:14px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;min-height:100vh}.bar{height:64px;padding:10px 22px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #687787}.brand{font-weight:800}.brand small{display:block;color:#a9b5c4;font-size:10px;letter-spacing:.16em;margin-top:3px}.actions{display:flex;align-items:center;gap:12px}.actions button{border:0;border-radius:8px;background:#b6f36a;color:#18200f;padding:10px 15px;font-weight:800;cursor:pointer}.hint{color:#b5c0ce;font-size:11px}.boards{height:calc(100vh - 64px);min-height:620px;display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:12px}.board{min-width:0;overflow:hidden;border:1px solid #667586;border-radius:12px;background:#374453;display:flex;flex-direction:column}.board h2{height:38px;flex:none;margin:0;padding:10px 14px;font-size:12px;letter-spacing:.08em;color:#eaf0f7}.board h2 span{float:right;color:#b6f36a;font-weight:500}.board iframe{width:100%;height:100%;border:0;background:#35404d}.toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);padding:10px 14px;border-radius:8px;background:#18212c;color:white;opacity:0;transition:opacity .2s;pointer-events:none}.toast.show{opacity:1}@media(max-width:720px){.boards{height:auto;min-height:calc(100vh - 64px);grid-template-columns:1fr}.board{height:780px}.hint{display:none}}
+</style>
+</head>
+<body>
+<header class="bar"><div class="brand">Cube Lab <small>DUAL AI SOLVE ARENA</small></div><div class="actions"><span class="hint">两台魔方独立运行 · 使用相同打乱比较用时</span><button id="syncScramble" disabled>等待两台魔方就绪…</button></div></header>
+<main class="boards"><section class="board"><h2>JEV <span>独立状态与计时</span></h2><iframe id="jevBoard" title="Jev 控制的独立三阶魔方" src="/index.html?arena=jev"></iframe></section><section class="board"><h2>DEEPSEEK FLASH <span>独立状态与计时</span></h2><iframe id="deepseekBoard" title="DeepSeek Flash 控制的独立三阶魔方" src="/index.html?arena=deepseek"></iframe></section></main><div id="toast" class="toast" role="status"></div>
+<script>
+(()=>{
+ const migrate=(from,to)=>{try{if(!localStorage.getItem(to)){const value=localStorage.getItem(from);if(value)localStorage.setItem(to,value)}}catch{}};
+ for(const provider of ['jev','deepseek']){
+   migrate('cubeLab.cube.v1','cubeLab.cube.v1.'+provider);
+   if(provider==='jev')migrate('cubeLab.aiLog.v1','cubeLab.aiLog.v1.jev');
+   try{const oldTimes=JSON.parse(localStorage.getItem('cubeLab.aiTimes.v1')||'{}'),key='cubeLab.aiTimes.v1.'+provider;if(!localStorage.getItem(key))localStorage.setItem(key,JSON.stringify({jev:{elapsed:0,best:null},deepseek:{elapsed:0,best:null},[provider]:oldTimes[provider]||{elapsed:0,best:null}}));}catch{}
+   try{const old=JSON.parse(localStorage.getItem('cubeLab.aiConfig.v1')||'{}'),key='cubeLab.aiConfig.v1.'+provider;if(!localStorage.getItem(key)){const config={...old,provider};if(provider==='jev')delete config.deepseekKey;else delete config.apiKey;localStorage.setItem(key,JSON.stringify(config));}}catch{}
+ }
+ const toast=document.querySelector('#toast'),syncButton=document.querySelector('#syncScramble');let toastTimer,ready=new Set(),pending=null;
+ const boards={jev:document.querySelector('#jevBoard'),deepseek:document.querySelector('#deepseekBoard')};
+ const showToast=message=>{toast.textContent=message;toast.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>toast.classList.remove('show'),2800)};
+ window.addEventListener('message',event=>{
+   if(event.origin!==location.origin)return;
+   const provider=Object.keys(boards).find(key=>boards[key].contentWindow===event.source);
+   if(!provider||event.data?.provider!==provider)return;
+   if(event.data.type==='cube-arena-ready'){
+     ready.add(provider);
+     if(ready.size===2){syncButton.disabled=false;syncButton.textContent='同步重新打乱';}
+   }
+   if(event.data.type==='cube-arena-scramble-result'&&pending?.id===event.data.requestId){
+     pending.results.set(provider,event.data);
+     if(pending.results.size===2){
+       const bothSucceeded=[...pending.results.values()].every(result=>result.success&&result.movesCompleted===20);
+       showToast(bothSucceeded?'两台魔方均已完成相同的20步打乱，可以开始复原':'打乱未能在两边都完成，请检查各自操作记录');
+       pending=null;syncButton.disabled=false;syncButton.textContent='同步重新打乱';
+     }
+   }
+ });
+ document.querySelector('#syncScramble').onclick=()=>{
+   if(ready.size!==2||pending)return;
+   const faces=['R','L','U','D','F','B'],moves=[];let previous='';
+   while(moves.length<20){const face=faces[Math.floor(Math.random()*faces.length)];if(face===previous)continue;previous=face;moves.push(face+['',"'",'2'][Math.floor(Math.random()*3)]);}
+   const id='scramble-'+Date.now()+'-'+Math.random().toString(36).slice(2);pending={id,results:new Map()};
+   syncButton.disabled=true;syncButton.textContent='正在等待两边完成打乱…';
+   showToast('已开始相同的20步打乱，等待两边实际执行完成…');
+   for(const frame of Object.values(boards))frame.contentWindow.postMessage({type:'cube-arena-scramble',requestId:id,moves},location.origin);
+ };
+})();
+</script>
+</body>
+</html>

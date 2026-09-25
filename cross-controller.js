@@ -6,6 +6,7 @@
   function create(api,P=DefaultPlanner){
     const stage=P.STAGE||{number:1,name:'底层十字',itemName:'底棱',completion:'四个底棱位置、黄色朝向、侧色对齐全部通过。自动停止于第1步。'};
     let running=false,aborter=null;
+    const providerName=provider=>provider==='deepseek'?'DeepSeek Flash':'Jev';
     const abortCheck=()=>{if(aborter.signal.aborted){const e=new Error('用户停止');e.name='AbortError';throw e;}};
     const log=(message,details={})=>api.log(message,{time:new Date().toISOString(),stage:stage.number,...details});
     const update=data=>api.update({running,stage,...data});
@@ -21,18 +22,19 @@
         const response=await (api.fetch||fetch)(config.transport,{method:'POST',headers,
           body:JSON.stringify(config.provider==='deepseek'?{provider:'deepseek',payload}:payload),signal:timeout.signal});
         const text=await response.text();
-        let body;try{body=JSON.parse(text);}catch{if(response.ok)throw new Error('Jev 响应不是 JSON');}
+        let body;try{body=JSON.parse(text);}catch{if(response.ok)throw new Error(providerName(config.provider)+' 响应不是 JSON');}
         if(!response.ok){
           const reason=typeof body?.error?.message==='string'?body.error.message:typeof body?.detail==='string'?body.detail:'';
-          throw new Error('Jev HTTP '+response.status+(reason?'：'+reason.slice(0,250):''));
+          const authHint=response.status===401?'；请检查 '+providerName(config.provider)+' API Key 是否正确、有效':'';
+          throw new Error(providerName(config.provider)+' HTTP '+response.status+authHint+(reason?'：'+reason.slice(0,250):''));
         }
         const answer=body.answers?.plan;
-        if(answer?.type!=='choice'||typeof answer.choice!=='string')throw new Error('Jev 响应缺少有效的 answers.plan.choice');
+        if(answer?.type!=='choice'||typeof answer.choice!=='string')throw new Error(providerName(config.provider)+' 响应缺少有效的 answers.plan.choice');
         return {choice:answer.choice,confidence:Number.isFinite(answer.confidence)?answer.confidence:null,model:body.model||config.model};
       }catch(e){
         if(signal.aborted){e.name='AbortError';throw e;}
-        if(timedOut)throw new Error('Jev 请求超过60秒，已暂停；可以重试');
-        if(e instanceof TypeError)throw new Error('无法连接 AI 代理，请检查代理地址、网络和 CORS 设置');
+        if(timedOut)throw new Error(providerName(config.provider)+' 请求超过60秒，已暂停；可以重试');
+        if(e instanceof TypeError)throw new Error('无法连接 '+providerName(config.provider)+' 代理，请检查代理地址、网络和 CORS 设置');
         throw e;
       }finally{clearTimeout(timer);signal.removeEventListener('abort',onAbort);}
     }

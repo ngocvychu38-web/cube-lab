@@ -92,7 +92,7 @@ const server = http.createServer(async (req, res) => {
   if((req.method==='GET'||req.method==='HEAD')&&audioAssets[url.pathname]){
     return send(res,200,'audio/wav',req.method==='HEAD'?'':fs.readFileSync(path.join(root,'assets','audio',audioAssets[url.pathname])));
   }
-  const assets = {'/':'index.html','/index.html':'index.html','/cross-planner.js':'cross-planner.js','/corner-planner.js':'corner-planner.js','/layer-planners.js':'layer-planners.js','/cross-controller.js':'cross-controller.js'};
+  const assets = {'/':'duel.html','/duel.html':'duel.html','/index.html':'index.html','/cross-planner.js':'cross-planner.js','/corner-planner.js':'corner-planner.js','/layer-planners.js':'layer-planners.js','/cross-controller.js':'cross-controller.js'};
   if ((req.method === 'GET' || req.method === 'HEAD') && assets[url.pathname]) {
     const file = assets[url.pathname];
     send(res, 200, file.endsWith('.js') ? 'text/javascript; charset=utf-8' : 'text/html; charset=utf-8', req.method === 'HEAD' ? '' : fs.readFileSync(path.join(root, file)));
