@@ -19,24 +19,59 @@
    try{const oldTimes=JSON.parse(localStorage.getItem('cubeLab.aiTimes.v1')||'{}'),key='cubeLab.aiTimes.v1.'+provider;if(!localStorage.getItem(key))localStorage.setItem(key,JSON.stringify({jev:{elapsed:0,best:null},deepseek:{elapsed:0,best:null},[provider]:oldTimes[provider]||{elapsed:0,best:null}}));}catch{}
    try{const old=JSON.parse(localStorage.getItem('cubeLab.aiConfig.v1')||'{}'),key='cubeLab.aiConfig.v1.'+provider;if(!localStorage.getItem(key)){const config={...old,provider};if(provider==='jev')delete config.deepseekKey;else delete config.apiKey;localStorage.setItem(key,JSON.stringify(config));}}catch{}
  }
- const toast=document.querySelector('#toast'),syncButton=document.querySelector('#syncScramble');let toastTimer,ready=new Set(),pending=null;
+ const toast=document.querySelector('#toast'),syncButton=document.querySelector('#syncScramble');let toastTimer,ready=new Set(),pending=null,voiceRequestId=null,bridgeToken='',solvePending=null,helloTimer=null,savedKeys={jev:null,deepseek:null},legacyKeys={jev:null,deepseek:null};
+ const protocol='easyinput-cube-v1',parentOrigin=new URLSearchParams(location.search).get('parentOrigin')||'';
+ const validParentOrigin=(()=>{try{const u=new URL(parentOrigin);return u.protocol==='http:'&&(['localhost','127.0.0.1','tauri.localhost'].includes(u.hostname))?u.origin:''}catch{return ''}})();
+ const report=(message,requestId=null,ok=true)=>{if(validParentOrigin&&bridgeToken)window.parent.postMessage({type:protocol,kind:'status',clientId,token:bridgeToken,message,requestId,ok},validParentOrigin)};
+ const clientId=crypto.randomUUID();
  const boards={jev:document.querySelector('#jevBoard'),deepseek:document.querySelector('#deepseekBoard')};
  const showToast=message=>{toast.textContent=message;toast.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>toast.classList.remove('show'),2800)};
  window.addEventListener('message',event=>{
+   if(event.source===window.parent&&validParentOrigin&&event.origin===validParentOrigin&&event.data?.type===protocol){
+     const data=event.data;
+     if(data.kind==='welcome'&&data.clientId===clientId&&typeof data.token==='string'){bridgeToken=data.token;if(data.keys&&typeof data.keys==='object'){for(const provider of ['jev','deepseek'])if(typeof data.keys[provider]==='string'){savedKeys[provider]=data.keys[provider];boards[provider].contentWindow.postMessage({type:'cube-arena-key',provider,key:savedKeys[provider]},location.origin);}}for(const provider of ['jev','deepseek'])if(!savedKeys[provider]&&legacyKeys[provider])window.parent.postMessage({type:protocol,kind:'key-change',clientId,token:bridgeToken,provider,key:legacyKeys[provider]},validParentOrigin);if(helloTimer){clearInterval(helloTimer);helloTimer=null;}report('EasyInput 语音桥已连接，正在确认两边魔方就绪…');return;}
+     if(data.kind==='keys'&&data.clientId===clientId&&bridgeToken&&data.token===bridgeToken&&data.keys&&typeof data.keys==='object'){for(const provider of ['jev','deepseek'])if(typeof data.keys[provider]==='string'){savedKeys[provider]=data.keys[provider];boards[provider].contentWindow.postMessage({type:'cube-arena-key',provider,key:savedKeys[provider]},location.origin);}return;}
+     if(data.kind==='command'&&bridgeToken&&data.clientId===clientId&&data.token===bridgeToken&&typeof data.requestId==='string'){
+       if(data.command==='scramble'){
+         if(syncButton.disabled){report('双盘尚未就绪或当前正在打乱',data.requestId,false);return;}
+         voiceRequestId=data.requestId;syncButton.click();report('已触发页面右上角“同步重新打乱”',data.requestId,true);return;
+       }
+       if(data.command==='solveBoth'){
+         if(ready.size!==2){report('两台魔方尚未就绪',data.requestId,false);return;}
+         solvePending={id:data.requestId,results:new Map()};
+         report('已同时向两边发送一键七步复原',data.requestId,true);
+         for(const frame of Object.values(boards))frame.contentWindow.postMessage({type:'cube-arena-solve-both',requestId:data.requestId},location.origin);
+         return;
+       }
+     }
+     if(data.kind==='solve-result'&&solvePending?.id===data.requestId&&['jev','deepseek'].includes(data.provider)){
+       solvePending.results.set(data.provider,!!data.ok);
+       if(solvePending.results.size===2){const both=[...solvePending.results.values()].every(Boolean);report(both?'两边均已开始各自的七步复原': '至少一边未能开始，请检查该模型 API Key 或魔方状态',solvePending.id,both);solvePending=null;}
+     }
+     return;
+   }
    if(event.origin!==location.origin)return;
    const provider=Object.keys(boards).find(key=>boards[key].contentWindow===event.source);
    if(!provider||event.data?.provider!==provider)return;
    if(event.data.type==='cube-arena-ready'){
      ready.add(provider);
-     if(ready.size===2){syncButton.disabled=false;syncButton.textContent='同步重新打乱';}
+     if(savedKeys[provider])boards[provider].contentWindow.postMessage({type:'cube-arena-key',provider,key:savedKeys[provider]},location.origin);
+     if(ready.size===2){syncButton.disabled=false;syncButton.textContent='同步重新打乱';report('双模型魔方已就绪：可同步打乱或同时开始七步复原');}
    }
+   if(event.data.type==='cube-arena-key-change'&&typeof event.data.key==='string'&&validParentOrigin&&bridgeToken){savedKeys[provider]=event.data.key;window.parent.postMessage({type:protocol,kind:'key-change',clientId,token:bridgeToken,provider,key:event.data.key},validParentOrigin);}
+   if(event.data.type==='cube-arena-legacy-key'&&typeof event.data.key==='string'&&!savedKeys[provider]){legacyKeys[provider]=event.data.key;if(validParentOrigin&&bridgeToken)window.parent.postMessage({type:protocol,kind:'key-change',clientId,token:bridgeToken,provider,key:event.data.key},validParentOrigin);}
    if(event.data.type==='cube-arena-scramble-result'&&pending?.id===event.data.requestId){
      pending.results.set(provider,event.data);
      if(pending.results.size===2){
        const bothSucceeded=[...pending.results.values()].every(result=>result.success&&result.movesCompleted===20);
        showToast(bothSucceeded?'两台魔方均已完成相同的20步打乱，可以开始复原':'打乱未能在两边都完成，请检查各自操作记录');
+       if(voiceRequestId){report(bothSucceeded?'两边已完成相同的20步同步打乱':'同步打乱未能在两边全部完成',voiceRequestId,bothSucceeded);voiceRequestId=null;}
        pending=null;syncButton.disabled=false;syncButton.textContent='同步重新打乱';
      }
+   }
+   if(event.data.type==='cube-arena-solve-result'&&solvePending?.id===event.data.requestId){
+     solvePending.results.set(provider,!!event.data.ok);
+     if(solvePending.results.size===2){const both=[...solvePending.results.values()].every(Boolean);report(both?'两边均已开始各自的七步复原':'至少一边未能开始，请检查该模型 API Key 或魔方状态',solvePending.id,both);solvePending=null;}
    }
  });
  document.querySelector('#syncScramble').onclick=()=>{
@@ -48,6 +83,11 @@
    showToast('已开始相同的20步打乱，等待两边实际执行完成…');
    for(const frame of Object.values(boards))frame.contentWindow.postMessage({type:'cube-arena-scramble',requestId:id,moves},location.origin);
  };
+ if(validParentOrigin&&window.parent!==window){
+   const hello=()=>window.parent.postMessage({type:protocol,kind:'hello',clientId},validParentOrigin);
+   hello();helloTimer=setInterval(()=>{if(!bridgeToken)hello();else{clearInterval(helloTimer);helloTimer=null;}},700);
+ }
+ for(const frame of Object.values(boards))frame.contentWindow.postMessage({type:'cube-arena-ping'},location.origin);
 })();
 </script>
 </body>

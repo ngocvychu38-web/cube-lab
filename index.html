@@ -285,14 +285,15 @@ function loadAIConfig(){
   document.querySelector('#aiEndpoint').value='https://api.typesafe.ai/v1/systemone';
   document.querySelector('#aiModel').value='jev-latest';
   try{const c=JSON.parse(localStorage.getItem(aiConfigKey)||localStorage.getItem('cubeLab.aiConfig.v1')||'{}');if(c.provider)document.querySelector('#aiProvider').value=c.provider;if(c.deepseekKey)document.querySelector('#deepseekKey').value=c.deepseekKey;if(c.model)document.querySelector('#aiModel').value=c.model;if(c.apiKey)document.querySelector('#aiKey').value=c.apiKey;if(c.proxyUrl)document.querySelector('#aiProxy').value=c.proxyUrl;if(c.modelScopeToken)document.querySelector('#aiModelScopeToken').value=c.modelScopeToken;}catch{}
+  if(arenaMode){const legacyKey=document.querySelector(arenaProvider==='deepseek'?'#deepseekKey':'#aiKey').value.trim();if(legacyKey)window.parent.postMessage({type:'cube-arena-legacy-key',provider:arenaProvider,key:legacyKey},location.origin);try{const c=JSON.parse(localStorage.getItem(aiConfigKey)||'{}');c.apiKey='';c.deepseekKey='';localStorage.setItem(aiConfigKey,JSON.stringify(c));}catch{}}
   if(arenaMode){document.querySelector('#aiProvider').value=arenaProvider;document.querySelector('#aiProvider').disabled=true;document.querySelector('#jevKeyLabel').hidden=arenaProvider!=='jev';document.querySelector('#deepseekKeyLabel').hidden=arenaProvider!=='deepseek';}document.querySelector('#aiGoal').value=selectedGoal;updateProviderFields();if(arenaMode){document.querySelector('#jevKeyLabel').hidden=arenaProvider!=='jev';document.querySelector('#deepseekKeyLabel').hidden=arenaProvider!=='deepseek';}
 }
 function updateProviderFields(){const ds=document.querySelector('#aiProvider').value==='deepseek';if(arenaMode){document.querySelector('#jevKeyLabel').hidden=arenaProvider!=='jev';document.querySelector('#deepseekKeyLabel').hidden=arenaProvider!=='deepseek';}else{document.querySelector('#jevKeyLabel').hidden=false;document.querySelector('#deepseekKeyLabel').hidden=false;}document.querySelector('#aiModel').value=ds?'deepseek-flash':'jev-latest';}
-function autosaveAIKeys(){try{const c=JSON.parse(localStorage.getItem(aiConfigKey)||'{}');c.provider=document.querySelector('#aiProvider').value;c.apiKey=document.querySelector('#aiKey').value.trim();c.deepseekKey=document.querySelector('#deepseekKey').value.trim();localStorage.setItem(aiConfigKey,JSON.stringify(c));}catch{}}
+function autosaveAIKeys(){try{const c=JSON.parse(localStorage.getItem(aiConfigKey)||'{}');c.provider=document.querySelector('#aiProvider').value;const apiKey=document.querySelector('#aiKey').value.trim(),deepseekKey=document.querySelector('#deepseekKey').value.trim();c.apiKey=arenaMode?'':apiKey;c.deepseekKey=arenaMode?'':deepseekKey;localStorage.setItem(aiConfigKey,JSON.stringify(c));if(arenaMode)window.parent.postMessage({type:'cube-arena-key-change',provider:arenaProvider,key:arenaProvider==='deepseek'?deepseekKey:apiKey},location.origin);}catch{}}
 function saveAIConfig(){
   let proxyUrl=document.querySelector('#aiProxy').value.trim();try{if(proxyUrl){const parsed=new URL(proxyUrl);if(parsed.protocol!=='https:'||parsed.pathname!=='/'||parsed.search||parsed.hash)throw new Error();proxyUrl=parsed.origin;}}catch{return notify('代理地址请填写 HTTPS Worker 根地址，例如 https://cube-proxy.example.workers.dev');}
   const modelScopeToken=document.querySelector('#aiModelScopeToken').value.trim();
-  const c={provider:document.querySelector('#aiProvider').value,deepseekKey:document.querySelector('#deepseekKey').value.trim(),endpoint:'https://api.typesafe.ai/v1/systemone',model:document.querySelector('#aiModel').value.trim()||'jev-latest',apiKey:document.querySelector('#aiKey').value.trim(),proxyUrl,modelScopeToken,goal:selectedGoal};
+  const c={provider:document.querySelector('#aiProvider').value,deepseekKey:arenaMode?'':document.querySelector('#deepseekKey').value.trim(),endpoint:'https://api.typesafe.ai/v1/systemone',model:document.querySelector('#aiModel').value.trim()||'jev-latest',apiKey:arenaMode?'':document.querySelector('#aiKey').value.trim(),proxyUrl,modelScopeToken,goal:selectedGoal};
   try{localStorage.setItem(aiConfigKey,JSON.stringify(c));notify('AI 设置已保存');if(aiDialog.open)aiDialog.close();return true;}
   catch{notify('浏览器无法保存设置，请允许本地存储');return false;}
 }
@@ -549,8 +550,22 @@ selectGoal(firstIncompleteGoal());
 loadAIConfig();renderAILog();for(const id of ['aiKey','deepseekKey'])document.querySelector('#'+id).addEventListener('input',autosaveAIKeys);document.querySelector('#aiOpen').onclick=runAI;document.querySelector('#aiSave').onclick=saveAIConfig;document.querySelector('#aiRun').onclick=runAI;document.querySelector('#aiClearLog').onclick=()=>{if(aiBusy)return;aiEvents=[];try{localStorage.removeItem(aiLogKey);}catch{}renderAILog()};
 document.querySelector('#newScramble').onclick=()=>scramble();
 window.addEventListener('message',event=>{
-  if(event.origin!==location.origin||event.data?.type!=='cube-arena-scramble'||!Array.isArray(event.data.moves))return;
-  scramble(event.data.moves,event.data.requestId||null);
+  if(event.origin!==location.origin)return;
+  if(event.source===window.parent&&event.data?.type==='cube-arena-ping'&&arenaMode){window.parent.postMessage({type:'cube-arena-ready',provider:arenaProvider},location.origin);return;}
+  if(event.source===window.parent&&event.data?.type==='cube-arena-key'&&arenaMode&&event.data.provider===arenaProvider&&typeof event.data.key==='string'){
+    const key=event.data.key.slice(0,4096),input=document.querySelector(arenaProvider==='jev'?'#aiKey':'#deepseekKey');
+    if(input.value!==key){input.value=key;autosaveAIKeys();}
+    return;
+  }
+  if(event.source===window.parent&&event.data?.type==='cube-arena-solve-both'&&arenaMode&&typeof event.data.requestId==='string'){
+    const requestId=event.data.requestId;
+    const button=document.querySelector('#allStepsStart');
+    const accepted=!!button&&!button.disabled;
+    if(accepted)button.click();
+    window.parent.postMessage({type:'cube-arena-solve-result',requestId,provider:arenaProvider,ok:accepted},location.origin);
+    return;
+  }
+  if(event.source===window.parent&&event.data?.type==='cube-arena-scramble'&&Array.isArray(event.data.moves))scramble(event.data.moves,event.data.requestId||null);
 });
 if(arenaMode)window.parent.postMessage({type:'cube-arena-ready',provider:arenaProvider},location.origin);
 document.querySelector('#resetBtn').onclick=resetCube;document.querySelector('#resetTop').onclick=resetCube;document.querySelector('#undoBtn').onclick=undoMove;document.querySelector('#undoTop').onclick=undoMove;document.querySelector('#timerBtn').onclick=toggleTimer;document.querySelector('#timerReset').onclick=resetTimer;document.querySelector('#clearHistory').onclick=()=>{moves=[];renderHistory();updateStatus()};document.querySelector('#copyScramble').onclick=async()=>{if(!scrambleMoves.length){notify('请先生成一组公式');return}try{await navigator.clipboard.writeText(scrambleMoves.join(' '));notify('公式已复制')}catch{notify('浏览器不支持复制')}};
